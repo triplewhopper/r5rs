@@ -1,0 +1,4 @@
+#ifndef R5RS_AST_QUOTE_H
+#define R5RS_AST_QUOTE_H
+
+#endif //R5RS_AST_QUOTE_H

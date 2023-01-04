@@ -1,64 +1,110 @@
-#ifndef _OBJ_H_
-#define _OBJ_H_
+#ifndef R5RS_TYPE_OBJECT_H
+#define R5RS_TYPE_OBJECT_H
 
 #include <stdlib.h>
 #include <stdio.h>
+#include <assert.h>
 #include "typedefs.h"
 
-struct scm_type_object {
-	ScmVarObject ob_base;
-	const char *const tp_name;
+struct method_def {
+	const char *ml_name;
 
-	ScmObject *(*const alloc)();
+	Object (*ml_meth)(Object *, Object *);
 
-	void (*print)(ScmObject *, FILE *);
-
-	void (*const init)(ScmObject *const);
-
-	void (*const dealloc)(ScmObject *const);
-
-	ScmObject *tp_dict;
-	ScmTypeObject *tp_base;
+	int ml_flags;
+	const char *ml_doc;
 };
 
-extern ScmTypeObject ScmType_Type;
+struct number_methods {
+	binaryfunc nb_add;
+	binaryfunc nb_sub;
+	binaryfunc nb_mul;
+	binaryfunc nb_div;
+	binaryfunc nb_pow;
+	unaryfunc nb_neg;
 
-extern ScmTypeObject ScmBaseObject_Type;
+	binaryfunc nb_lshift;
+	binaryfunc nb_rshift;
 
-void assert_type(ScmObject *obj, ScmTypeObject *obj_type) {
-	if (obj->ob_type != obj_type) {
-		char buf[100];
-		sprintf(buf, "TypeError: expected type %s, got %s instead.", obj->ob_type->tp_name, obj_type->tp_name);
-		perror(buf);
-		exit(EXIT_FAILURE);
-	}
-}
 
-#define CAST(ptr, T) ((T)(ptr))
+	unaryfunc nb_long;
+	unaryfunc nb_float;
+	unaryfunc nb_fraction;
+	unaryfunc nb_complex;
 
-#define INC_REF(obj) do {(obj)->ref_cnt++;}while(0)
+	int_unaryfunc nb_is_zero;
+	int_unaryfunc nb_is_exact;
+	int_unaryfunc nb_is_inexact;
+	unaryfunc nb_to_exact;
+	unaryfunc nb_to_inexact;
 
-#define DEC_REF(obj) do {assert((obj)->ref_cnt>0);if(--(obj)->ref_cnt==0){}} while(0)
 
-void *my_malloc(size_t n_bytes) {
-	void *res = malloc(n_bytes);
-	if (res == NULL) {
-		perror("malloc failed");
-		exit(EXIT_FAILURE);
-	} else {
-		return res;
-	}
-}
+	int_unaryfunc nb_is_integer;
+	int_unaryfunc nb_is_rational;
+	int_unaryfunc nb_is_real;
+	int_unaryfunc nb_is_complex;
 
-void *my_realloc(void *original, size_t n_bytes) {
-	void *tmp = realloc(original, n_bytes);
-	if (tmp == NULL) {
-		perror("realloc failed");
-		exit(EXIT_FAILURE);
-	} else {
-		free(original);
-		return tmp;
-	}
-}
+	int_binaryfunc nb_eq;
+	int_binaryfunc nb_ne;
+	int_binaryfunc nb_gt;
+	int_binaryfunc nb_ge;
+	int_binaryfunc nb_lt;
+	int_binaryfunc nb_le;
+};
+struct cmp_methods{
+	int_binaryfunc cmp_eq;
+	int_binaryfunc cmp_eqv;
+	int_binaryfunc cmp_equal;
+};
+struct type_object {
+	const char *const tp_name;
+	const size_t tp_basicsize;
+	const size_t tp_itemsize;
 
+	Object *(*tp_alloc)(TypeObject *, size_t);
+
+	print_proc tp_print;
+	print_proc tp_repr;
+	dealloc_proc tp_dealloc;
+
+//	callfunc tp_call;
+//	evalfunc tp_eval;
+
+	NumberMethods *tp_as_number;
+	CompareMethods *tp_cmp;
+
+	struct type_object *tp_base;
+};
+
+void Type_SetBaseClass(TypeObject *t, TypeObject *base);
+
+int Type_IsSubClass(TypeObject *, TypeObject *);
+
+extern TypeObject BaseObject_Type;
+extern TypeObject Boolean_Type;
+extern TypeObject Char_Type;
+extern TypeObject Complex_Type;
+extern TypeObject Float_Type;
+extern TypeObject Fraction_Type;
+extern TypeObject Long_Type;
+extern TypeObject None_Type;
+extern TypeObject Pair_Type;
+extern TypeObject String_Type;
+extern TypeObject Symbol_Type;
+extern TypeObject Vector_Type;
+extern TypeObject Dict_Type;
+extern TypeObject DictNode_Type;
+extern TypeObject ChainMap_Type;
+//#define __DEBUG__
+#define PRINT(obj, out) TYPE(obj)->tp_print(AS_OBJECT(obj), out)
+
+#ifdef __DEBUG__
+#define DEBUG(obj, out) PRINT(obj, out)
+#else
+#define DEBUG(obj, out)
 #endif
+
+#define REPR(obj, out) TYPE(obj)->tp_repr(AS_OBJECT(obj), out)
+#define EVAL(obj, vm) TYPE(obj)->tp_eval(AS_OBJECT(obj), vm)
+#define CALL(obj, vm) TYPE(obj)->tp_call(AS_OBJECT(obj), vm)
+#endif //R5RS_TYPE_OBJECT_H

@@ -1,51 +1,49 @@
-#ifndef _PAIR_OBJECT_H_
-#define _PAIR_OBJECT_H_
-#include "typeobject.h"
+#ifndef R5RS_PAIR_OBJECT_H
+#define R5RS_PAIR_OBJECT_H
 
-typedef struct scm_pair{
-	ScmObject_HEAD
-	ScmObject *car;
-	ScmObject *cdr;
-}ScmPairObject;
+#include "object.h"
 
-ScmObject* pair_alloc();
-void pair_init(ScmObject* self);
-void pair_dealloc(ScmObject* self);
-
-const ScmTypeObject pair_t={
-	.name="scm_pair",
-	.alloc=pair_alloc, 
-	.init=pair_init, 
-	.dealloc=pair_dealloc
+struct pair_object {
+	Object ob_base;
+	Object *car;
+	Object *cdr;
+	int is_list;
 };
 
-ScmObject* pair_alloc(){
-	ScmObject *obj = my_malloc(sizeof(ScmObject));
-	scm_pair *p = my_malloc(sizeof(scm_pair));
-	*obj = (ScmObject){._type= &pair_t, .ref_cnt=0, .is_mutable=1, (void*)p};
-	return obj;
-}
-void pair_init(ScmObject* self){
-	ASSERT_TYPE(self, pair_t);
-	scm_pair *p = CAST(self->_obj, scm_pair*);
-	p->car = NULL;
-	p->cdr = NULL;
-}
-void pair_dealloc(ScmObject *self){
-	ASSERT_TYPE(self, Pair);
-	
-}
-ScmObject* pair_car(ScmObject *self){
-	ASSERT_TYPE(self, Pair);
-	return (CAST(self->_obj, scm_pair*))->car;
-}
+extern TypeObject Pair_Type;
+extern PairObject empty_list;
+#define EMPTY_LIST AS_OBJECT(&empty_list)
+#define IS_NULL(obj) (AS_OBJECT(obj) == EMPTY_LIST)
+#define IS_NOT_NULL(obj) (AS_OBJECT(obj) != EMPTY_LIST)
+#define IS_LIST(obj) (IS_NULL(obj) || IS_TYPE(obj, Pair_Type) && Pair_IsList(AS_PAIR(obj)))
+#define CAR(obj) AS_OBJECT(AS_PAIR(obj)->car)
+#define CDR(obj) AS_OBJECT(AS_PAIR(obj)->cdr)
 
-ScmObject* pair_cdr(ScmObject *self){
-	ASSERT_TYPE(self, Pair);
-	return (CAST(self->_obj, scm_pair*))->cdr;
-}
-size_t pair_hash(ScmObject *self){
-	ASSERT_TYPE(self, Pair);
+// steals obj1, obj2
+#define CONS(obj1, obj2) AS_OBJECT(Pair_New(AS_OBJECT(obj1), AS_OBJECT(obj2)))
 
-}
-#endif
+PairObject *Pair_New(Object *car, Object *cdr);
+
+//void Pair_Init(PairObject *, Object *, Object *);
+
+void Pair_Print(PairObject *, FILE *);
+
+void Pair_Repr(PairObject *, FILE *);
+
+void Pair_Dealloc(PairObject *);
+
+Object *Pair_GetCar(PairObject *);
+
+Object *Pair_GetCdr(PairObject *);
+
+int Pair_IsList(PairObject *);
+
+size_t Pair_ListLength(Object *self);
+
+int Pair_Equal(PairObject *, PairObject *);
+
+void EmptyList_Print(PairObject *, FILE *);
+
+void Pair_Eval(PairObject *self, VirtualMachineObject *vm);
+
+#endif //R5RS_PAIR_OBJECT_H
