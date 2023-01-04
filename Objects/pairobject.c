@@ -13,7 +13,7 @@ TypeObject Pair_Type = {
 		.tp_itemsize=0,
 		.tp_print=(print_proc) Pair_Print,
 		.tp_dealloc=(dealloc_proc) Pair_Dealloc,
-//		.tp_eval=(evalfunc)Pair_Eval,
+		.tp_flags = TPFLAGS_HAVE_GC
 };
 TypeObject EmptyList_Type = {
 		"empty_list",
@@ -27,13 +27,12 @@ PairObject empty_list = {
 		{1, &EmptyList_Type}, NULL, NULL, .is_list=1
 };
 
-//steals car, cdr
 PairObject *Pair_New(Object *car, Object *cdr) {
 	PairObject *res = (PairObject *) TypeGenericAlloc(&Pair_Type, 0);
 	assert(car);
 	assert(cdr);
-	res->car = car;
-	res->cdr = cdr;
+	res->car = NewRef(car);
+	res->cdr = NewRef(cdr);
 	if (IS_NULL(cdr) || IS_TYPE(cdr, Pair_Type)) {
 		res->is_list = AS_PAIR(cdr)->is_list;
 	} else res->is_list = 0;

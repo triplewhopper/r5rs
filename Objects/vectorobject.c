@@ -9,6 +9,7 @@ TypeObject Vector_Type = {
 		.tp_itemsize=sizeof(Object *),
 		.tp_print=(print_proc) Vector_Print,
 		.tp_dealloc=(dealloc_proc) Vector_Dealloc,
+		.tp_flags=TPFLAGS_HAVE_GC
 };
 
 VectorObject *Vector_New(size_t size) {

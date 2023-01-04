@@ -32,6 +32,7 @@ struct code_object {
 	size_t capacity;
 	int frozen;
 	size_t co_id;
+//	size_t n_vars, n_consts;
 	Object *co_name;
 	VMInstruction *co_instructions;
 };

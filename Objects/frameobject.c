@@ -16,12 +16,13 @@ TypeObject Frame_Type = {
 		.tp_itemsize=0,
 		.tp_print=(print_proc) Frame_Print,
 		.tp_repr=(print_proc) NULL,
-		.tp_dealloc =(dealloc_proc) Frame_Dealloc
+		.tp_dealloc =(dealloc_proc) Frame_Dealloc,
+		.tp_flags = TPFLAGS_HAVE_GC
 };
 
 FrameObject *Frame_New(FrameObject *prev, ProcedureObject *func) {
 	FrameObject *res = CAST(FrameObject *, TypeGenericAlloc(&Frame_Type, 0));
-	res->fr_prev = prev != NULL ? NEW_REF(prev) : NULL;
+	res->fr_prev = XNEW_REF(prev);
 	res->fr_env = ChainMap_NewChild(func->lexical_scope, NULL);
 	res->fr_code = NEW_REF(func->code);
 	res->pc = 0;
@@ -30,10 +31,9 @@ FrameObject *Frame_New(FrameObject *prev, ProcedureObject *func) {
 
 FrameObject *Frame_Global(ChainMap *globals, CodeObject *code) {
 	FrameObject *res = CAST(FrameObject *, TypeGenericAlloc(&Frame_Type, 0));
-
 	res->fr_prev = NULL;
 	res->fr_env = NEW_REF(globals);
-	res->fr_code = code != NULL ? NEW_REF(code) : NULL;
+	res->fr_code = NEW_REF(code);
 	res->pc = 0;
 	return res;
 

@@ -7,6 +7,7 @@ TypeObject ChainMap_Type = {
 		.tp_print=(print_proc) ChainMap_Print,
 		.tp_repr=(print_proc) ChainMap_Print,
 		.tp_dealloc=(dealloc_proc) ChainMap_Dealloc,
+		.tp_flags = TPFLAGS_HAVE_GC
 };
 
 size_t ChainMap_GetSize(ChainMap *self) {
@@ -137,6 +138,7 @@ void ChainMap_Print(ChainMap *self, FILE *out) {
 }
 
 void ChainMap_Dealloc(ChainMap *self) {
+	gc_untrack(AS_OBJECT(self));
 	size_t len = SIZE(self);
 	for (size_t i = 0; i < len; ++i) {
 		DECREF(self->maps[i]);

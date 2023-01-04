@@ -20,6 +20,8 @@ TypeObject DictNode_Type = {
 		.tp_itemsize=0,
 		.tp_print=(print_proc) NULL,
 		.tp_dealloc=(dealloc_proc) DictNode_Dealloc,
+		.tp_flags = TPFLAGS_HAVE_GC,
+		.tp_traverse=(visit_proc) Dict_Traverse,
 };
 
 DictNode *DictNode_New(SymbolObject *key, Object *value, DictNode *next) {
@@ -52,6 +54,7 @@ TypeObject Dict_Type = {
 		.tp_itemsize=sizeof(DictNode),
 		.tp_print=(print_proc) Dict_Print,
 		.tp_dealloc=(dealloc_proc) Dict_Dealloc,
+		.tp_flags = TPFLAGS_HAVE_GC
 };
 
 DictObject *Dict_New() {
@@ -76,6 +79,12 @@ void Dict_Print(DictObject *self, FILE *out) {
 	} else {
 		fprintf(out, "{}");
 	}
+}
+
+void Dict_Traverse(DictObject *self) {
+	for (DictNode *node = self->head; node != NULL; node = node->next)
+		if (TYPE(node->value)->tp_flags & TPFLAGS_HAVE_GC)
+			TRAVERSE(node->value);
 }
 
 void Dict_Dealloc(DictObject *self) {

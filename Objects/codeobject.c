@@ -6,7 +6,8 @@ TypeObject Code_Type = {
 		.tp_basicsize=sizeof(CodeObject),
 		.tp_itemsize=sizeof(VMInstruction),
 		.tp_dealloc=(dealloc_proc) Code_Dealloc,
-		.tp_print=(print_proc) Code_Print
+		.tp_print=(print_proc) Code_Print,
+		.tp_flags=TPFLAGS_HAVE_GC,
 };
 static size_t code_id_count = 0;
 CodeObject *codes_table[100];
@@ -14,12 +15,11 @@ CodeObject *codes_table[100];
 CodeObject *Code_New(Object *co_name) {
 	CodeObject *res = CAST(CodeObject*, TypeGenericAlloc(&Code_Type, 0));
 	assert(co_name == NULL || IS_TYPE(co_name, Symbol_Type));
-	XINCREF(co_name);
 	res->capacity = 1;
 	res->frozen = 0;
 	res->co_id = ++code_id_count;
 	codes_table[res->co_id] = res;
-	res->co_name = co_name;
+	res->co_name = XNewRef(co_name);
 	res->co_instructions = calloc(1, Code_Type.tp_itemsize);
 	assert(res->co_instructions);
 
@@ -112,6 +112,7 @@ void Code_Print(CodeObject *self, FILE *f) {
 }
 
 void Code_Dealloc(CodeObject *self) {
+	gc_untrack(AS_OBJECT(self));
 	codes_table[self->co_id] = 0;
 	for (size_t i = 0; i < SIZE(self); ++i) {
 		if (self->co_instructions[i].opcode == VM_LOAD) {

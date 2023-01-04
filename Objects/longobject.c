@@ -53,9 +53,16 @@ static LongObject *Long_Alloc() {
 
 static LongObject *Long_New(size_t size);
 
+#ifdef SMALL_INT_OPTIMIZATION
 static LongObject small_ints[261]; // -5..255
 
+static LongObject *get_small_ints(i64 val) {
+	return NEW_REF(&small_ints[val + 5]);
+}
+#endif
+
 void Long_SmallIntsInitialize() {
+#ifdef SMALL_INT_OPTIMIZATION
 	static int small_ints_init_flag = 0;
 	if (!small_ints_init_flag) {
 		small_ints_init_flag = 1;
@@ -63,16 +70,16 @@ void Long_SmallIntsInitialize() {
 			small_ints[i + 5] = (LongObject) {1, &Long_Type, i};
 		}
 	}
+#endif
 }
 
-static LongObject *get_small_ints(i64 val) {
-	return NEW_REF(&small_ints[val + 5]);
-}
 
 LongObject *Long_From_i64(i64 val) {
-//	if (-5 <= val && val <= 255) {
-//		return get_small_ints(val);
-//	}
+#ifdef SMALL_INT_OPTIMIZATION
+	if (-5 <= val && val <= 255) {
+		return get_small_ints(val);
+	}
+#endif
 	LongObject *res = Long_Alloc();
 	res->ob_val = val;
 	return res;
@@ -206,8 +213,7 @@ LongObject *Long_RightShift(LongObject *self, LongObject *other) {
 }
 
 LongObject *Long_GCD(LongObject *x, LongObject *y) {
-	INCREF(x);
-	INCREF(y);
+	INCREF(x), INCREF(y);
 	LongObject *tmp = NULL;
 	while (!Long_IsZero(y)) {
 		tmp = Long_Remainder(x, y);

@@ -121,33 +121,31 @@ static Object *exec_binaryfunc(Object *x, Object *y, enum BinaryOpCode opcode) {
 static Object *Number_BinaryOp(Object *x, Object *y, enum BinaryOpCode opcode) {
 	if (IS_NUMBER(x)) {
 		if (IS_NUMBER(y)) {
-			Object *xx = NULL, *yy = NULL, *res = NULL;
+			INCREF(x), INCREF(y);
+			Object *res = NULL, *tmp = NULL;
 			if (IS_EXACT(x) && IS_EXACT(y)) {
 				if (IsIntegerFast(x) && IsIntegerFast(y)) {
-					xx = call_unaryfunc(nb_long, x);
-					yy = call_unaryfunc(nb_long, y);
+					MOVE_SET(tmp, x, call_unaryfunc(nb_long, x));
+					MOVE_SET(tmp, y, call_unaryfunc(nb_long, y));
 				} else {
-					xx = call_unaryfunc(nb_fraction, x);
-					yy = call_unaryfunc(nb_fraction, y);
+					MOVE_SET(tmp, x, call_unaryfunc(nb_fraction, x));
+					MOVE_SET(tmp, y, call_unaryfunc(nb_fraction, y));
 				}
-				res = exec_binaryfunc(xx, yy, opcode);
+				res = exec_binaryfunc(x, y, opcode);
 				if (IS_INTEGER(res)) {
-					Object *tmp = res;
-					res = call_unaryfunc(nb_long, res);
-					DECREF(tmp);
+					MOVE_SET(tmp, res, call_unaryfunc(nb_long, res));
 				}
 			} else {
 				if (IS_REAL(x) && IS_REAL(y)) {
-					xx = call_unaryfunc(nb_float, x);
-					yy = call_unaryfunc(nb_float, y);
+					MOVE_SET(tmp, x, call_unaryfunc(nb_float, x));
+					MOVE_SET(tmp, y, call_unaryfunc(nb_float, y));
 				} else {
-					xx = call_unaryfunc(nb_complex, x);
-					yy = call_unaryfunc(nb_complex, y);
+					MOVE_SET(tmp, x, call_unaryfunc(nb_complex, x));
+					MOVE_SET(tmp, y, call_unaryfunc(nb_complex, y));
 				}
-				res = exec_binaryfunc(xx, yy, opcode);
+				res = exec_binaryfunc(x, y, opcode);
 			}
-//			DECREF(xx);
-//			DECREF(yy);
+			DECREF(x), DECREF(y);
 			return AS_OBJECT(res);
 		} else {
 //			char opcode_name = "+-*/"[opcode];

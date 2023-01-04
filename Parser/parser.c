@@ -74,7 +74,7 @@ Object *ParseList(LexerObject *lexer) {
 	if (t->kind == L_PAREN) {
 		int has_dot = 0;
 		int has_r_paren = 0;
-		Object *objs[20]={NULL};
+		Object *objs[20] = {NULL};
 		size_t n_objs = 0;
 
 		while (!has_r_paren) {
@@ -137,16 +137,17 @@ Object *ParseList(LexerObject *lexer) {
 			cdr = NewRef(EMPTY_LIST);
 		}
 		while (n_objs--) {
-			cdr = CONS(objs[n_objs], cdr);
-			objs[n_objs]=NULL;
+			Object *tmp = NULL;
+			MOVE_SET(tmp, cdr, CONS(objs[n_objs], cdr));
+			DECREF(objs[n_objs]);
+			objs[n_objs] = NULL;
 		}
 		return cdr;
 	} else if (t->kind == SINGLE_QUOTE) {
 		Object *datum = ParseDatum(lexer);
-		Object *cdr = CONS(datum, NewRef(EMPTY_LIST));
-		Object *res = CONS(NewRef(global_symbols.quote), cdr);
-//		DECREF(datum);
-//		DECREF(cdr);
+		Object *cdr = CONS(datum, EMPTY_LIST);
+		Object *res = CONS(global_symbols.quote, cdr);
+		DECREF(datum), DECREF(cdr);
 		return res;
 	} else {
 		return not_implemented(t);

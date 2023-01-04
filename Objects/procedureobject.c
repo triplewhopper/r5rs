@@ -16,6 +16,7 @@ TypeObject Procedure_Type = {
 		.tp_itemsize=0,
 		.tp_print=(print_proc) Procedure_Print,
 		.tp_dealloc=(dealloc_proc) Procedure_Dealloc,
+		.tp_flags=TPFLAGS_HAVE_GC
 };
 
 ProcedureObject *Procedure_New(Object *formals, CodeObject *code, ChainMap *lexical_scope) {

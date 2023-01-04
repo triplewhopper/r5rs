@@ -96,23 +96,18 @@ static Object *as_integer_ratio(double x) {
 	LongObject *numerator = Long_FromDouble(float_part);
 	LongObject *denominator = Long_From_i64(1);
 	LongObject *e = Long_From_i64(abs(exponent));
-//	LongObject *tmp = NULL;
 	if (exponent > 0) {
-//		tmp = numerator;
-//		numerator = Long_LeftShift(tmp, e);
-		numerator = Long_LeftShift(numerator, e);
+		LongObject *tmp = NULL;
+		MOVE_SET(tmp, numerator, Long_LeftShift(numerator, e));
 	} else {
-//		tmp = denominator;
-//		denominator = Long_RightShift(tmp, e);
-		denominator = Long_RightShift(denominator, e);
+		LongObject *tmp = NULL;
+		MOVE_SET(tmp, denominator, Long_RightShift(denominator, e));
 	}
-	return CONS(numerator, denominator);
-//	PairObject *res = Pair_New(AS_OBJECT(numerator), AS_OBJECT(denominator));
-//	DECREF(tmp);
-//	DECREF(numerator);
-//	DECREF(denominator);
-//	DECREF(e);
-//	return res;
+	Object *res = CONS(numerator, denominator);
+	DECREF(numerator);
+	DECREF(denominator);
+	DECREF(e);
+	return res;
 }
 
 Object *Float_AsIntegerRatio(FloatObject *self) {

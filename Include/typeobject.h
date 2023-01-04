@@ -72,10 +72,11 @@ struct type_object {
 
 	NumberMethods *tp_as_number;
 	CompareMethods *tp_cmp;
-
+	size_t tp_flags;
+	visit_proc tp_traverse;
 	struct type_object *tp_base;
 };
-
+#define TPFLAGS_HAVE_GC 1
 void Type_SetBaseClass(TypeObject *t, TypeObject *base);
 
 int Type_IsSubClass(TypeObject *, TypeObject *);
@@ -105,6 +106,5 @@ extern TypeObject ChainMap_Type;
 #endif
 
 #define REPR(obj, out) TYPE(obj)->tp_repr(AS_OBJECT(obj), out)
-#define EVAL(obj, vm) TYPE(obj)->tp_eval(AS_OBJECT(obj), vm)
-#define CALL(obj, vm) TYPE(obj)->tp_call(AS_OBJECT(obj), vm)
+#define TRAVERSE(obj) TYPE(obj)->tp_traverse(AS_OBJECT(obj))
 #endif //R5RS_TYPE_OBJECT_H

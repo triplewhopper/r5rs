@@ -13,7 +13,6 @@ void Type_SetBaseClass(TypeObject *t, TypeObject *base) {
 //	fill_method(tp_print);
 //	fill_method(tp_repr);
 	fill_method(tp_cmp);
-//	fill_method(tp_eval);
 
 #undef fill_method
 }

@@ -224,7 +224,7 @@ Object *cdr(size_t argc, Object *argv[]) {
 
 Object *cons(size_t argc, Object *argv[]) {
 	CHECK_ARGC(2, "(cons obj1 obj2)");
-	return CONS(NewRef(argv[0]), NewRef(argv[1]));
+	return CONS(argv[0], argv[1]);
 }
 
 Object *eq(size_t argc, Object *argv[]) {
@@ -324,7 +324,7 @@ Object *num_sub(size_t argc, Object *argv[]) {
 	if (argc == 1) {
 		MOVE_SET(tmp, ans, Number_Sub(ans, argv[0]));
 	} else {
-		MOVE_SET(tmp, ans, argv[0]);
+		MOVE_SET(tmp, ans, NewRef(argv[0]));
 	}
 
 	for (size_t i = 1; i < argc; ++i) {
@@ -347,7 +347,7 @@ Object *num_div(size_t argc, Object *argv[]) {
 	if (argc == 1) {
 		MOVE_SET(tmp, ans, Number_Div(ans, argv[0]));
 	} else {
-		MOVE_SET(tmp, ans, argv[0]);
+		MOVE_SET(tmp, ans, NewRef(argv[0]));
 	}
 	for (size_t i = 1; i < argc; ++i) {
 		MOVE_SET(tmp, ans, Number_Div(ans, argv[i]));

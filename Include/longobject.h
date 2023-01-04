@@ -2,7 +2,7 @@
 #define R5RS_LONG_OBJECT_H
 
 #include "object.h"
-
+//#define SMALL_INT_OPTIMIZATION
 struct long_object {
 	Object ob_base;
 	i64 ob_val;

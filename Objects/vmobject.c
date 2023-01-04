@@ -19,7 +19,8 @@ TypeObject VirtualMachine_Type = {
 		.tp_itemsize=0,
 		.tp_print=(print_proc) NULL,
 		.tp_repr=(print_proc) NULL,
-		.tp_dealloc =(dealloc_proc) VirtualMachine_Dealloc
+		.tp_dealloc =(dealloc_proc) VirtualMachine_Dealloc,
+		.tp_flags = TPFLAGS_HAVE_GC,
 };
 
 VirtualMachineObject *VirtualMachine_New(ChainMap *globals) {
@@ -34,7 +35,9 @@ VirtualMachineObject *VirtualMachine_New(ChainMap *globals) {
 // steals o
 static void push(VirtualMachineObject *vm, Object *o) {
 	assert(o);
-	vm->operands = CONS(o, vm->operands);
+	Object *tmp = NULL;
+	MOVE_SET(tmp, vm->operands, CONS(o, vm->operands));
+	DECREF(o);
 }
 
 static void pop(VirtualMachineObject *vm) {
@@ -92,9 +95,6 @@ int VirtualMachine_Call(VirtualMachineObject *self, Object *args, ProcedureObjec
 	} else {
 		FrameObject *tmp2 = NULL;
 		MOVE_SET(tmp2, self->frame, Frame_New(self->frame, func));
-//		FrameObject *tmp2 = Frame_New(self->frame, CAST(ProcedureObject *, func));
-//		DECREF(self->frame);
-//		self->frame = tmp2;
 		if (IS_LIST(func->formals)) {
 			assert(Pair_ListLength(args) == Pair_ListLength(func->formals));
 			Object *t1, *t2;
@@ -121,7 +121,7 @@ int VirtualMachine_Call(VirtualMachineObject *self, Object *args, ProcedureObjec
 
 int VirtualMachine_TailCall(VirtualMachineObject *self, Object *args, ProcedureObject *func) {
 	assert(IS_LIST(args));
-	CFunction *c_func = AS_PROCEDURE(func)->c_function;
+	CFunction *c_func = func->c_function;
 	if (c_func != NULL) {
 		Object *res = call_c_func(c_func, args);
 		if (res == NULL) return -1;
@@ -133,7 +133,7 @@ int VirtualMachine_TailCall(VirtualMachineObject *self, Object *args, ProcedureO
 	} else {
 //		FrameObject *tmp2;
 //		MOVE_SET(tmp2, self->frame, Frame_New(self->frame->fr_prev, CAST(ProcedureObject * , func)));
-		FrameObject *tmp2 = Frame_New(self->frame->fr_prev, AS_PROCEDURE(func));
+		FrameObject *tmp2 = Frame_New(self->frame->fr_prev, func);
 		DECREF(self->frame);
 		self->frame = tmp2;
 		if (IS_LIST(func->formals)) {
@@ -200,7 +200,7 @@ int VirtualMachine_EvalFrame(VirtualMachineObject *vm) {
 					break;
 				}
 				case VM_LOOKUP: {
-					Object *x = CAR(vm->operands);
+					Object *x = top(vm->operands);
 					pop(vm);
 					assert(IS_TYPE(x, Symbol_Type));
 					Object *y = ChainMap_GetItem(vm->frame->fr_env, AS_SYMBOL(x));
@@ -212,7 +212,7 @@ int VirtualMachine_EvalFrame(VirtualMachineObject *vm) {
 						goto error;
 					}
 					push(vm, y);
-//					DECREF(x);
+					DECREF(x);
 //					DECREF(y);
 					vm->frame->pc++;
 					break;
@@ -234,8 +234,7 @@ int VirtualMachine_EvalFrame(VirtualMachineObject *vm) {
 					vm->frame->pc++;
 					break;
 				}
-				case VM_CALL:
-				case VM_TAIL_CALL: {
+				case VM_CALL: {
 					Object *args = top(vm->operands);
 					pop(vm);
 					Object *func = top(vm->operands);
@@ -260,41 +259,42 @@ int VirtualMachine_EvalFrame(VirtualMachineObject *vm) {
 #endif
 					break;
 				}
-					{
-						Object *args = top(vm->operands);
-						pop(vm);
-						Object *func = top(vm->operands);
-						pop(vm);
-						assert(IS_TYPE(func, Procedure_Type));
-						vm->frame->pc++;
-						if (vm->frame->fr_prev == NULL) {
-							if (VirtualMachine_Call(vm, args, AS_PROCEDURE(func)) < 0)
-								goto error;
+				case VM_TAIL_CALL: {
+					Object *args = top(vm->operands);
+					pop(vm);
+					Object *func = top(vm->operands);
+					pop(vm);
+					assert(IS_TYPE(func, Procedure_Type));
+					vm->frame->pc++;
+					if (vm->frame->fr_prev == NULL) {
+						if (VirtualMachine_Call(vm, args, AS_PROCEDURE(func)) < 0)
+							goto error;
 #ifdef __DEBUG__
-							printf("initial tail call\n");
+						printf("initial tail call\n");
 #endif
-						} else {
-							if (VirtualMachine_TailCall(vm, args, AS_PROCEDURE(func)) < 0)
-								goto error;
+					} else {
+						if (VirtualMachine_TailCall(vm, args, AS_PROCEDURE(func)) < 0)
+							goto error;
 #ifdef __DEBUG__
-							printf("tail call\n");
+						printf("tail call\n");
 #endif
-						}
-#ifdef __DEBUG__
-						printf("----------frames---------\n");
-						PRINT(vm->frame, stdout);
-						printf("----------end frames-----\n");
-#endif
-						DECREF(args);
-						DECREF(func);
-						break;
 					}
+#ifdef __DEBUG__
+					printf("----------frames---------\n");
+					PRINT(vm->frame, stdout);
+					printf("----------end frames-----\n");
+#endif
+					DECREF(args);
+					DECREF(func);
+					break;
+				}
 				case VM_CONS: {
 					Object *y = top(vm->operands);
 					pop(vm);
 					Object *x = top(vm->operands);
 					pop(vm);
 					push(vm, CONS(x, y));
+					DECREF(x), DECREF(y);
 					vm->frame->pc++;
 					break;
 				}
@@ -329,10 +329,8 @@ int VirtualMachine_EvalFrame(VirtualMachineObject *vm) {
 
 		{
 			assert(IS_OWNED(vm->frame));
-			FrameObject *tmp = vm->frame->fr_prev;
-			vm->frame->fr_prev = NULL;
-			DECREF(vm->frame);
-			vm->frame = tmp;
+			FrameObject *tmp = NULL;
+			MOVE_SET(tmp, vm->frame, XNEW_REF(vm->frame->fr_prev));
 
 //			printf("return\n");
 		}
@@ -566,7 +564,7 @@ static void dfs_let(Object *o, CodeObject *code, int tail_flag, int define_flag,
 	}
 	Object *formals = NewRef(EMPTY_LIST);
 	for (i = 1; i <= n_bindings; ++i) {
-		formals = CONS(NewRef(_formals[n_bindings - i]), formals);
+		MOVE_SET(tmp, formals, CONS(_formals[n_bindings - i], formals));
 	}
 	assert(Procedure_FormalsCheckValid(formals));
 	assert(Procedure_FormalsCheckUnique(formals));

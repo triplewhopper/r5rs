@@ -37,6 +37,8 @@ typedef void (*print_proc)(Object *, FILE *);
 
 typedef void (*dealloc_proc)(Object *);
 
+typedef void (*visit_proc)(Object *);
+
 typedef Object *CFunction(size_t, Object *[]);
 
 typedef Object *(*binaryfunc)(Object *, Object *);
@@ -44,6 +46,7 @@ typedef Object *(*binaryfunc)(Object *, Object *);
 typedef Object *(*unaryfunc)(Object *);
 
 typedef int (*int_unaryfunc)(Object *);
+
 typedef int (*int_binaryfunc)(Object *, Object *);
 
 #endif //R5RS_TYPEDEFS_H

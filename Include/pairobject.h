@@ -19,7 +19,6 @@ extern PairObject empty_list;
 #define CAR(obj) AS_OBJECT(AS_PAIR(obj)->car)
 #define CDR(obj) AS_OBJECT(AS_PAIR(obj)->cdr)
 
-// steals obj1, obj2
 #define CONS(obj1, obj2) AS_OBJECT(Pair_New(AS_OBJECT(obj1), AS_OBJECT(obj2)))
 
 PairObject *Pair_New(Object *car, Object *cdr);

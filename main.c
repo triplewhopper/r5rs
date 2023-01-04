@@ -37,7 +37,6 @@ void TypeObjectsInit() {
 	Type_SetBaseClass(&Code_Type, &BaseObject_Type);
 	Type_SetBaseClass(&Frame_Type, &BaseObject_Type);
 	Type_SetBaseClass(&VirtualMachine_Type, &BaseObject_Type);
-	Long_SmallIntsInitialize();
 }
 
 const char *readline() {
@@ -52,8 +51,8 @@ const char *readline() {
 }
 
 void bytecode_test() {
-	LexerObject *l = Lexer_FromFile("../testcode/s18.scm");
-	FILE *fout = fopen("../testcode/s18.bytecode.txt", "w");
+	LexerObject *l = Lexer_FromFile("../testcode/s3.scm");
+	FILE *fout = fopen("../testcode/s3.bytecode.txt", "w");
 	ChainMap *builtins = LoadBuiltinFuncs();
 	ChainMap *globals = ChainMap_NewChild(builtins, NULL);
 	VirtualMachineObject *vm = VirtualMachine_New(globals);
@@ -181,6 +180,7 @@ const char *to_string(Object *obj) {
 
 int main() {
 	TypeObjectsInit();
+	Long_SmallIntsInitialize();
 	GlobalSymbolsInit();
 	bytecode_test();
 	GlobalSymbolsFinalize();

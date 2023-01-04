@@ -13,8 +13,8 @@ DictObject *Dict_New();
 
 void Dict_Print(DictObject *, FILE *);
 
+void Dict_Traverse(DictObject *);
 void Dict_Dealloc(DictObject *);
-
 size_t Dict_GetSize(DictObject *);
 
 void Dict_SetItem(DictObject *, SymbolObject *, Object *);
