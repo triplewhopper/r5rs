@@ -10,7 +10,7 @@ typedef struct {
 	size_t line, column;
 } SourceLocation;
 
-typedef struct {
+typedef struct pos_ptr{
 	SourceLocation pos;
 	const char *lookahead;
 } PosPtr;
@@ -31,7 +31,7 @@ PosPtr consume(PosPtr, size_t);
 // return consume(current, j).
 PosPtr consume_until_delimiters(PosPtr, size_t);
 
-typedef struct token_object{
+struct token_object{
 	Object ob_base;
 	TokenKind kind;
 	SourceLocation start, end;
@@ -46,7 +46,7 @@ typedef struct token_object{
 	// kind == CHARACTER: ob_val is a CharObject
 	// kind == BOOLEAN: ob_val is a BooleanObject
 	// otherwise ob_val == NULL.
-} TokenObject;
+};
 
 extern TypeObject Token_Type;
 

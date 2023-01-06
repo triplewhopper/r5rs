@@ -25,6 +25,8 @@ FractionObject *Fraction_FromComplex(ComplexObject *);
 
 void Fraction_Dealloc(FractionObject *);
 
+void Fraction_Search(FractionObject *self, Object *target, ArrayObject *res);
+
 void Fraction_Print(FractionObject *, FILE *);
 
 LongObject *Fraction_GetNumerator(FractionObject *);

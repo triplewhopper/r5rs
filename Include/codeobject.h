@@ -2,6 +2,7 @@
 #define R5RS_CODE_OBJECT_H
 
 #include "object.h"
+#include "arrayobject.h"
 
 enum VMOpCode {
 	VM_NOP,
@@ -20,7 +21,6 @@ enum VMOpCode {
 
 typedef struct vm_instruction {
 	enum VMOpCode opcode;
-
 	union {
 		Object *obj;
 		size_t op_arg;
@@ -29,12 +29,10 @@ typedef struct vm_instruction {
 
 struct code_object {
 	VarObject ob_base;
-	size_t capacity;
 	int frozen;
 	size_t co_id;
-//	size_t n_vars, n_consts;
 	Object *co_name;
-	VMInstruction *co_instructions;
+	ArrayObject *co_instructions;
 };
 extern TypeObject Code_Type;
 
@@ -48,10 +46,16 @@ void Code_Print(CodeObject *self, FILE *f);
 
 void Code_Dealloc(CodeObject *self);
 
+void Code_Traverse(CodeObject *self, visit_proc visit, void *arg);
+
+void Code_Search(CodeObject *self, Object *target, ArrayObject *res);
+
 void Code_SetOpArg(CodeObject *self, size_t index, size_t op_arg);
 
 void Code_SetOpObj(CodeObject *self, size_t index, Object *obj);
 
 void Code_SetName(CodeObject *self, Object *name);
+
+const VMInstruction *Code_InstructionAt(CodeObject *self, size_t index);
 
 #endif //R5RS_CODE_OBJECT_H

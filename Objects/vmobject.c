@@ -20,7 +20,8 @@ TypeObject VirtualMachine_Type = {
 		.tp_print=(print_proc) NULL,
 		.tp_repr=(print_proc) NULL,
 		.tp_dealloc =(dealloc_proc) VirtualMachine_Dealloc,
-		.tp_flags = TPFLAGS_HAVE_GC,
+		.tp_search=(search_proc) VirtualMachine_Search
+//		.tp_flags = TPFLAGS_HAVE_GC,
 };
 
 VirtualMachineObject *VirtualMachine_New(ChainMap *globals) {
@@ -158,9 +159,18 @@ int VirtualMachine_TailCall(VirtualMachineObject *self, Object *args, ProcedureO
 }
 
 void VirtualMachine_Dealloc(VirtualMachineObject *vm) {
-	DECREF(vm->operands);
-	DECREF(vm->globals);
-	XDECREF(vm->frame);
+	CLEAR(vm->operands);
+	CLEAR(vm->globals);
+	CLEAR(vm->frame);
+}
+
+void VirtualMachine_Search(VirtualMachineObject *vm, Object *target, ArrayObject *res) {
+	APPEND_PARENT(target, vm, vm->operands);
+	APPEND_PARENT(target, vm, vm->globals);
+	APPEND_PARENT(target, vm, vm->frame);
+	SEARCH(vm->operands, target, res);
+	SEARCH(vm->globals, target, res);
+	SEARCH(vm->frame, target, res);
 }
 
 int VirtualMachine_Exec(VirtualMachineObject *vm, CodeObject *code) {
@@ -179,7 +189,7 @@ int VirtualMachine_EvalFrame(VirtualMachineObject *vm) {
 #endif
 		while (vm->frame->pc < SIZE(vm->frame->fr_code)) {
 //			printf("pc=%zu/%d\n", vm->frame->pc, SIZE(vm->frame->fr_code));
-			VMInstruction *instr = &vm->frame->fr_code->co_instructions[vm->frame->pc];
+			const VMInstruction *instr = Code_InstructionAt(vm->frame->fr_code, vm->frame->pc);
 			switch (instr->opcode) {
 				case VM_NOP:
 					vm->frame->pc++;
@@ -442,7 +452,6 @@ static void dfs_set(Object *o, CodeObject *code, int tail_flag, int define_flag,
 static void dfs_lambda_body(Object *o, CodeObject *code, int tail_flag, int define_flag, ChainMap *scope);
 
 void dfs_lambda_body(Object *o, CodeObject *code, int tail_flag, int define_flag, ChainMap *scope) {
-	assert(code->co_id != 2 || SIZE(code) <= 9 || code->co_instructions[9].opcode == VM_JUMP_IF_FALSE);
 	assert(IS_LIST(o));
 	assert(IS_NOT_NULL(o));
 	assert(define_flag);
@@ -461,7 +470,6 @@ void dfs_lambda_body(Object *o, CodeObject *code, int tail_flag, int define_flag
 }
 
 void dfs_define(Object *o, CodeObject *code, int tail_flag, int define_flag, ChainMap *scope) {
-	assert(code->co_id != 2 || SIZE(code) <= 9 || code->co_instructions[9].opcode == VM_JUMP_IF_FALSE);
 	assert(define_flag != 0);
 	Object *var = NULL, *formals = NULL, *e = NULL;
 	if (ParseArgs(o, "(define (? . ?) . ?)", &var, &formals, &e) == 3) {
@@ -494,7 +502,6 @@ void dfs_define(Object *o, CodeObject *code, int tail_flag, int define_flag, Cha
 }
 
 void dfs_if(Object *o, CodeObject *code, int tail_flag, int define_flag, ChainMap *scope) {
-//	assert(code->co_id != 2 || SIZE(code) <= 9 || code->co_instructions[9].opcode == VM_JUMP_IF_FALSE);
 	Object *test = NULL;
 	Object *e1 = NULL, *e2 = NULL;
 	if (ParseArgs(o, "(if ? ? ?)", &test, &e1, &e2) == 3) {
@@ -598,7 +605,6 @@ static void dfs_let(Object *o, CodeObject *code, int tail_flag, int define_flag,
 }
 
 void dfs(Object *o, CodeObject *code, int tail_flag, int define_flag, ChainMap *scope) {
-//	assert(code->co_id != 2 || SIZE(code) <= 9 || code->co_instructions[9].opcode == VM_JUMP_IF_FALSE);
 
 	if (IS_LIST(o) && IS_NOT_NULL(o)) {
 		if (EQV(global_symbols.quote, CAR(o))) {

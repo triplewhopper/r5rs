@@ -226,7 +226,7 @@ int ParseArgs(Object *obj, const char *format, ...) {
 	int res = ParseArgsImpl(obj, datum, ap);
 	assert(ParseDatum(lexer) == NULL);
 	DECREF(datum);
-	Lexer_Finalize(lexer);
+	DECREF(lexer);
 	va_end(ap);
 	return res;
 }

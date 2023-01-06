@@ -24,6 +24,8 @@ void Symbol_Repr(SymbolObject *, FILE *);
 
 void Symbol_Dealloc(SymbolObject *);
 
+void Symbol_Search(SymbolObject *self, Object *target, ArrayObject *res);
+
 struct g_symbols {
 	Object *cond;
 	Object *cond_case;

@@ -269,14 +269,18 @@ int Long_EQ(LongObject *self, Object *other) {
 	assert(IS_NUMBER(other));
 	if (!IS_INTEGER(other)) return 0;
 	LongObject *y = AS_LONG(NUMBER_METHODS(other)->nb_long(other));
-	return self->ob_val == y->ob_val;
+	int res = self->ob_val == y->ob_val;
+	DECREF(y);
+	return res;
 }
 
 int Long_LT(LongObject *self, Object *other) {
 	assert(IS_REAL(other));
 	if (IS_INTEGER(other)) {
 		LongObject *y = AS_LONG(NUMBER_METHODS(other)->nb_long(other));
-		return self->ob_val < y->ob_val;
+		int res = self->ob_val < y->ob_val;
+		DECREF(y);
+		return res;
 	} else {
 		return !Long_EQ(self, other) && !NUMBER_METHODS(other)->nb_lt(other, AS_OBJECT(self));
 	}

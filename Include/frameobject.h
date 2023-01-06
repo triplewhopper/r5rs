@@ -17,4 +17,8 @@ void Frame_Print(FrameObject *, FILE *);
 
 void Frame_Dealloc(FrameObject *);
 
+void Frame_Traverse(FrameObject *, visit_proc, void *);
+
+void Frame_Search(FrameObject *self, Object *target, ArrayObject *res);
+
 #endif //R5RS_FRAME_OBJECT_H

@@ -8,16 +8,17 @@
 struct object {
 	int ob_refcnt;
 	TypeObject *ob_type;
-
+	int finalized;
 #ifdef FLAG_TRACK_ALL_OBJS
 	int obj_index;
+	int searched;
 #endif
 };
-struct gc_head{
+
+typedef struct gc_head {
 	int gc_ref;
-	Object *gc_next;
-	Object *gc_prev;
-};
+	int visited;
+} GC_Head;
 
 typedef struct scm_var_object {
 	Object ob_base;
@@ -46,27 +47,28 @@ Object *NewRef(Object *);
 
 Object *XNewRef(Object *obj);
 
+void get_parents(Object *obj);
+
+void gc_initialize();
+
+void gc_finalize();
 
 void gc_track(Object *);
+
 void gc_untrack(Object *);
+
 void gc_collect();
-void gc_is_tracked(Object *);
+
+int gc_is_tracked(Object *);
 
 #ifdef FLAG_TRACK_ALL_OBJS
 
 size_t count_live_objs(TypeObject *type);
 
-CodeObject *get_live_codeobj();
+ChainMap *get_live_chainmapobj();
 
 #endif
 
-
-void Eval_Default(Object *, VirtualMachineObject *);
-//void move(Object** dest, Object **src){
-//	*dest = *src;
-//	*src = NULL;
-//}
-//int ptr_set(Object **, Object *);
 
 #define CAST(type, expr) ((type)(expr))
 #define AS_OBJECT(obj) CAST(Object*, (obj))
@@ -89,10 +91,22 @@ void Eval_Default(Object *, VirtualMachineObject *);
 #define DECREF(op) DecRef(AS_OBJECT(op))
 #define XINCREF(op) XIncRef(AS_OBJECT(op))
 #define XDECREF(op) XDecRef(AS_OBJECT(op))
+
+#define CLEAR(op) \
+    do { \
+        typeof(op)* _tmp_op_ptr = &(op); \
+        typeof(op) _tmp_old_op = (*_tmp_op_ptr); \
+        if (_tmp_old_op != NULL) { \
+            *_tmp_op_ptr = NULL; \
+            DECREF(_tmp_old_op); \
+        } \
+    } while (0)
+
 #define IS_OWNED(ref) (REFCNT(ref) == 1)
 #define IS_SHARED(ref) (REFCNT(ref) > 1)
 #define NEW_REF(op) CAST(typeof(op), NewRef(AS_OBJECT(op)))
 #define XNEW_REF(op) CAST(typeof(op), XNewRef(AS_OBJECT(op)))
+#define WEAK_REF(op) CAST(typeof(op), op)
 //#define PTR_SET(x, v) ptr_set((Object**)(x), (Object*)(v))
 //#define MOVE(dest, src) move((Object**)&(dest), (Object**))
 #define MOVE_SET(a, b, c) do { (a)=(b); (b)=(c); DECREF(a); } while(0)

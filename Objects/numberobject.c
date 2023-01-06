@@ -58,6 +58,9 @@ MAKE_NUMBER_FUNC(IsExact)
 MAKE_NUMBER_FUNC(IsInexact)
 
 Object *Id(Object *op) {
+//	Object *res = TypeGenericAlloc(TYPE(op), 0);
+//	memcpy(res + 1, op + 1, TYPE(op)->tp_basicsize - sizeof(Object));
+//	return res;
 	return NewRef(op);
 }
 

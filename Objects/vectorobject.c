@@ -2,6 +2,7 @@
 #include "../Include/typeobject.h"
 #include "../Include/vectorobject.h"
 #include "../Include/noneobject.h"
+#include "../Include/arrayobject.h"
 
 TypeObject Vector_Type = {
 		.tp_name = "Vector",
@@ -9,7 +10,9 @@ TypeObject Vector_Type = {
 		.tp_itemsize=sizeof(Object *),
 		.tp_print=(print_proc) Vector_Print,
 		.tp_dealloc=(dealloc_proc) Vector_Dealloc,
-		.tp_flags=TPFLAGS_HAVE_GC
+		.tp_flags=TPFLAGS_HAVE_GC,
+		.tp_traverse=(traverse_proc) Vector_Traverse,
+		.tp_search=(search_proc) Vector_Search,
 };
 
 VectorObject *Vector_New(size_t size) {
@@ -18,6 +21,7 @@ VectorObject *Vector_New(size_t size) {
 	for (size_t i = 0; i < size; ++i) {
 		res->ob_item[i] = NewRef(OBJ_NONE);
 	}
+	gc_track(AS_OBJECT(res));
 	return res;
 }
 
@@ -69,8 +73,25 @@ void Vector_Print(VectorObject *self, FILE *out) {
 }
 
 void Vector_Dealloc(VectorObject *self) {
+	gc_untrack(AS_OBJECT(self));
 	for (size_t i = 0; i < SIZE(self); ++i) {
-		DECREF(self->ob_item[i]);
+		CLEAR(self->ob_item[i]);
 	}
+}
+
+void Vector_Traverse(VectorObject *self, visit_proc visit, void *arg){
+	for (size_t i = 0; i < SIZE(self); ++i) {
+		VISIT(self->ob_item[i], arg);
+	}
+}
+
+void Vector_Search(VectorObject *self, Object *target, ArrayObject *res){
+	for (size_t i = 0; i < SIZE(self); ++i) {
+		APPEND_PARENT(target, self, self->ob_item[i]);
+	}
+	for (size_t i = 0; i < SIZE(self); ++i) {
+		SEARCH(self->ob_item[i], target, res);
+	}
+
 }
 

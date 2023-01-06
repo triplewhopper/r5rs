@@ -19,6 +19,10 @@ void Vector_Print(VectorObject *self, FILE *out);
 
 void Vector_Dealloc(VectorObject *self);
 
+void Vector_Traverse(VectorObject *self, visit_proc visit, void *arg);
+
+void Vector_Search(VectorObject *self, Object *target, ArrayObject *res);
+
 // (self: &vec, index: u32) -> &obj
 Object *Vector_GetItem(VectorObject *self, size_t index);
 

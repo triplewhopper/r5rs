@@ -16,8 +16,10 @@ TypeObject Frame_Type = {
 		.tp_itemsize=0,
 		.tp_print=(print_proc) Frame_Print,
 		.tp_repr=(print_proc) NULL,
-		.tp_dealloc =(dealloc_proc) Frame_Dealloc,
-		.tp_flags = TPFLAGS_HAVE_GC
+		.tp_dealloc=(dealloc_proc) Frame_Dealloc,
+		.tp_flags=TPFLAGS_HAVE_GC,
+		.tp_traverse=(traverse_proc) Frame_Traverse,
+		.tp_search=(search_proc) Frame_Search
 };
 
 FrameObject *Frame_New(FrameObject *prev, ProcedureObject *func) {
@@ -26,6 +28,7 @@ FrameObject *Frame_New(FrameObject *prev, ProcedureObject *func) {
 	res->fr_env = ChainMap_NewChild(func->lexical_scope, NULL);
 	res->fr_code = NEW_REF(func->code);
 	res->pc = 0;
+	gc_track(AS_OBJECT(res));
 	return res;
 }
 
@@ -35,6 +38,7 @@ FrameObject *Frame_Global(ChainMap *globals, CodeObject *code) {
 	res->fr_env = NEW_REF(globals);
 	res->fr_code = NEW_REF(code);
 	res->pc = 0;
+	gc_track(AS_OBJECT(res));
 	return res;
 
 }
@@ -61,7 +65,23 @@ void Frame_Print(FrameObject *self, FILE *f) {
 }
 
 void Frame_Dealloc(FrameObject *self) {
-	XDECREF(self->fr_prev);
-	DECREF(self->fr_env);
-	XDECREF(self->fr_code);
+	gc_untrack(AS_OBJECT(self));
+	CLEAR(self->fr_prev);
+	CLEAR(self->fr_env);
+	CLEAR(self->fr_code);
+}
+
+void Frame_Traverse(FrameObject *self, visit_proc visit, void *arg) {
+	if (self->fr_prev != NULL) VISIT(self->fr_prev, arg);
+	VISIT(self->fr_env, arg);
+	if (self->fr_code != NULL) VISIT(self->fr_code, arg);
+}
+
+void Frame_Search(FrameObject *self, Object *target, ArrayObject *res) {
+	APPEND_PARENT(target, self, self->fr_prev);
+	APPEND_PARENT(target, self, self->fr_env);
+	APPEND_PARENT(target, self, self->fr_code);
+	SEARCH(self->fr_prev, target, res);
+	SEARCH(self->fr_env, target, res);
+	SEARCH(self->fr_code, target, res);
 }

@@ -3,6 +3,7 @@
 #include "../Include/typeobject.h"
 #include "../Include/numberobject.h"
 #include "../Include/pairobject.h"
+#include "../Include/arrayobject.h"
 
 CompareMethods fraction_compare = {
 		.cmp_eqv = (int_binaryfunc) Fraction_Eqv,
@@ -42,7 +43,8 @@ TypeObject Fraction_Type = {
 		.tp_print=(print_proc) Fraction_Print,
 		.tp_dealloc=(dealloc_proc) Fraction_Dealloc,
 		.tp_as_number=&fraction_as_number,
-		.tp_cmp=&fraction_compare
+		.tp_cmp=&fraction_compare,
+		.tp_search=(search_proc) Fraction_Search,
 };
 
 FractionObject *Fraction_New(LongObject *numerator, LongObject *denominator, int normalize) {
@@ -91,6 +93,14 @@ FractionObject *Fraction_FromComplex(ComplexObject *op) {
 void Fraction_Dealloc(FractionObject *self) {
 	DECREF(self->_numerator);
 	DECREF(self->_denominator);
+}
+
+void Fraction_Search(FractionObject *self, Object *target, ArrayObject *res) {
+	APPEND_PARENT(target, self, self->_numerator);
+	APPEND_PARENT(target, self, self->_denominator);
+
+	SEARCH(self->_numerator, target, res);
+	SEARCH(self->_denominator, target, res);
 }
 
 void Fraction_Print(FractionObject *self, FILE *out) {

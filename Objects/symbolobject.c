@@ -2,6 +2,7 @@
 #include "../Include/stringobject.h"
 #include "../Include/symbolobject.h"
 #include "../Include/dictobject.h"
+#include "../Include/arrayobject.h"
 #include <assert.h>
 
 CompareMethods symbol_compare = {
@@ -15,7 +16,8 @@ TypeObject Symbol_Type = {
 		.tp_print=(print_proc) Symbol_Print,
 		.tp_repr=(print_proc) Symbol_Repr,
 		.tp_dealloc = (dealloc_proc) Symbol_Dealloc,
-		.tp_cmp = &symbol_compare
+		.tp_cmp = &symbol_compare,
+		.tp_search=(search_proc) Symbol_Search
 };
 
 SymbolObject *Symbol_FromCStr(const char *s) {
@@ -55,6 +57,11 @@ void Symbol_Repr(SymbolObject *self, FILE *out) {
 
 void Symbol_Dealloc(SymbolObject *self) {
 	DECREF(self->name);
+}
+
+void Symbol_Search(SymbolObject *self, Object *target, ArrayObject *res){
+	APPEND_PARENT(target, self, self->name);
+	SEARCH(self->name, target, res);
 }
 
 void GlobalSymbolsInit() {

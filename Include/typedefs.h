@@ -8,12 +8,15 @@ typedef uint32_t u32;
 typedef int64_t i64;
 typedef uint64_t u64;
 typedef int64_t shash_t;
-typedef struct object Object;
+
 typedef struct type_object TypeObject;
+typedef struct object Object;
+
 typedef struct complex_object ComplexObject;
 typedef struct float_object FloatObject;
 typedef struct long_object LongObject;
 typedef struct fraction_object FractionObject;
+
 typedef struct boolean_object BooleanObject;
 typedef struct char_object CharObject;
 typedef struct string_object StringObject;
@@ -21,12 +24,16 @@ typedef struct vector_object VectorObject;
 typedef struct pair_object PairObject;
 typedef struct procedure_object ProcedureObject;
 typedef struct symbol_object SymbolObject;
+typedef struct none_object NoneObject;
+
+typedef struct array_object ArrayObject;
+typedef struct token_object TokenObject;
 typedef struct dict_object DictObject;
 typedef struct dict_entry_object DictNode;
 typedef struct chain_map_object ChainMap;
-typedef struct none_object NoneObject;
 typedef struct code_object CodeObject;
 typedef struct frame_object FrameObject;
+
 typedef struct number_methods NumberMethods;
 typedef struct mapping_methods MappingMethods;
 typedef struct cmp_methods CompareMethods;
@@ -37,8 +44,11 @@ typedef void (*print_proc)(Object *, FILE *);
 
 typedef void (*dealloc_proc)(Object *);
 
-typedef void (*visit_proc)(Object *);
+typedef int (*visit_proc)(Object *, void *);
 
+typedef void (*traverse_proc)(Object *, visit_proc, void *);
+
+typedef void (*search_proc)(Object*, Object *, ArrayObject *);
 typedef Object *CFunction(size_t, Object *[]);
 
 typedef Object *(*binaryfunc)(Object *, Object *);

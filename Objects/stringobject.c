@@ -62,7 +62,7 @@ StringObject *String_FromCStrN(const char *s, size_t length) {
 	StringObject *t = AS_STRING(TypeGenericAlloc(&String_Type, length + 1));
 	memcpy(t->ob_sval, s, length);
 	t->ob_sval[length] = '\0';
-	t->ob_base.ob_size = (int) length;
+	SIZE(t) = (int) length;
 	t->ob_shash = calculate_hash(s, length);
 	return t;
 }

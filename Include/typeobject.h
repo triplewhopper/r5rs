@@ -67,13 +67,13 @@ struct type_object {
 	print_proc tp_repr;
 	dealloc_proc tp_dealloc;
 
-//	callfunc tp_call;
-//	evalfunc tp_eval;
-
 	NumberMethods *tp_as_number;
 	CompareMethods *tp_cmp;
 	size_t tp_flags;
-	visit_proc tp_traverse;
+	traverse_proc tp_traverse;
+	int_unaryfunc tp_clear;
+	search_proc tp_search;
+
 	struct type_object *tp_base;
 };
 #define TPFLAGS_HAVE_GC 1
@@ -94,7 +94,7 @@ extern TypeObject String_Type;
 extern TypeObject Symbol_Type;
 extern TypeObject Vector_Type;
 extern TypeObject Dict_Type;
-extern TypeObject DictNode_Type;
+//extern TypeObject DictNode_Type;
 extern TypeObject ChainMap_Type;
 //#define __DEBUG__
 #define PRINT(obj, out) TYPE(obj)->tp_print(AS_OBJECT(obj), out)
@@ -106,5 +106,15 @@ extern TypeObject ChainMap_Type;
 #endif
 
 #define REPR(obj, out) TYPE(obj)->tp_repr(AS_OBJECT(obj), out)
-#define TRAVERSE(obj) TYPE(obj)->tp_traverse(AS_OBJECT(obj))
+#define TRAVERSE(obj, visit, arg) TYPE(obj)->tp_traverse(AS_OBJECT(obj), visit, arg)
+#define VISIT(obj, arg) visit(AS_OBJECT(obj), arg)
+#define SEARCH(obj, target, res) \
+	do{ \
+		if((obj) != NULL && !AS_OBJECT(obj)->searched){ \
+			AS_OBJECT(obj)->searched = 1; \
+            if(TYPE(obj)->tp_search) TYPE(obj)->tp_search(AS_OBJECT(obj), target, res); \
+        } \
+    }while(0)
+
+#define APPEND_PARENT(target, parent, son) do{if(AS_OBJECT(son) == (target)) Array_Append(res, &(parent));}while(0)
 #endif //R5RS_TYPE_OBJECT_H

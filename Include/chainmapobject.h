@@ -15,6 +15,8 @@ void ChainMap_Print(ChainMap *self, FILE *out);
 
 void ChainMap_Dealloc(ChainMap *self);
 
+void ChainMap_Traverse(ChainMap *self, visit_proc visit, void *arg);
+
 size_t ChainMap_GetSize(ChainMap *self);
 
 ChainMap *ChainMap_New(DictObject *args[]);
@@ -35,5 +37,6 @@ int ChainMap_Contains(ChainMap *self, SymbolObject *key);
 
 void ChainMap_DelItem(ChainMap *self, SymbolObject *key);
 
+void ChainMap_Search(ChainMap *self, Object *target, ArrayObject *res);
 
 #endif //R5RS_CHAINMAPOBJECT_H

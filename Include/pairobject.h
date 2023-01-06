@@ -31,6 +31,10 @@ void Pair_Repr(PairObject *, FILE *);
 
 void Pair_Dealloc(PairObject *);
 
+void Pair_Traverse(PairObject *self, visit_proc visit, void *arg);
+
+void Pair_Search(PairObject *self, Object *target, ArrayObject *res);
+
 Object *Pair_GetCar(PairObject *);
 
 Object *Pair_GetCdr(PairObject *);

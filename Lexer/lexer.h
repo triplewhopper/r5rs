@@ -11,11 +11,13 @@
 #include "../Include/booleanobject.h"
 #include "../Include/typedefs.h"
 
+extern TypeObject Lexer_Type;
+
 LexerObject *Lexer_FromFile(const char *);
 
 LexerObject *Lexer_FromCStr(const char *);
 
-void Lexer_Finalize(LexerObject *);
+void Lexer_Dealloc(LexerObject *lexer);
 
 int Lexer_GetNextToken(LexerObject *, TokenObject **);
 

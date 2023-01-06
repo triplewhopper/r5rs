@@ -4,18 +4,15 @@
 #include "object.h"
 #include "typeobject.h"
 
-struct dict_object {
-	VarObject ob_base;
-	struct dict_entry_object *head;
-};
-
 DictObject *Dict_New();
 
 void Dict_Print(DictObject *, FILE *);
 
-void Dict_Traverse(DictObject *);
+void Dict_Traverse(DictObject *, visit_proc, void *);
+
+void Dict_Search(DictObject *self, Object *target, ArrayObject *res);
+
 void Dict_Dealloc(DictObject *);
-size_t Dict_GetSize(DictObject *);
 
 void Dict_SetItem(DictObject *, SymbolObject *, Object *);
 

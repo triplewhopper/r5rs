@@ -16,17 +16,21 @@ TypeObject Procedure_Type = {
 		.tp_itemsize=0,
 		.tp_print=(print_proc) Procedure_Print,
 		.tp_dealloc=(dealloc_proc) Procedure_Dealloc,
-		.tp_flags=TPFLAGS_HAVE_GC
+		.tp_flags=TPFLAGS_HAVE_GC,
+		.tp_traverse=(traverse_proc) Procedure_Traverse,
+		.tp_search=(search_proc) Procedure_Search
 };
 
 ProcedureObject *Procedure_New(Object *formals, CodeObject *code, ChainMap *lexical_scope) {
-	assert(IS_LIST(formals) || IS_TYPE(formals, Pair_Type) || IS_TYPE(formals, Symbol_Type));
+	assert(Procedure_FormalsCheckValid(formals));
+	assert(Procedure_FormalsCheckUnique(formals));
 	ProcedureObject *res = AS_PROCEDURE(TypeGenericAlloc(&Procedure_Type, 0));
 	res->formals = NewRef(formals);
 	res->code = NEW_REF(code);
 	res->c_func_name = NULL;
 	res->c_function = NULL;
 	res->lexical_scope = NEW_REF(lexical_scope);
+	gc_track(AS_OBJECT(res));
 	return res;
 }
 
@@ -38,6 +42,7 @@ ProcedureObject *Procedure_FromCFunction(StringObject *name, CFunction func) {
 	res->c_func_name = NEW_REF(name);
 	res->c_function = func;
 	res->lexical_scope = NULL;
+	gc_track(AS_OBJECT(res));
 	return res;
 
 }
@@ -95,18 +100,46 @@ int Procedure_FormalsCheckUnique(Object *formals) {
 	return 0;
 }
 
-void Procedure_Dealloc(ProcedureObject *self) {
+void Procedure_GC_Clear(ProcedureObject *self) {
 	if (self->c_function == NULL) {
-		DECREF(self->formals);
-		DECREF(self->code);
-		DECREF(self->lexical_scope);
+		CLEAR(self->formals);
+		CLEAR(self->code);
+		CLEAR(self->lexical_scope);
 		assert(self->c_func_name == NULL);
 	} else {
-		DECREF(self->c_func_name);
+		CLEAR(self->c_func_name);
 		assert(self->formals == NULL);
 		assert(self->code == NULL);
 		assert(self->lexical_scope == NULL);
 	}
+
+}
+
+void Procedure_Dealloc(ProcedureObject *self) {
+	gc_untrack(AS_OBJECT(self));
+	Procedure_GC_Clear(self);
+}
+
+void Procedure_Traverse(ProcedureObject *self, visit_proc visit, void *arg) {
+	if (self->c_function == NULL) {
+		VISIT(self->formals, arg);
+		VISIT(self->code, arg);
+		VISIT(self->lexical_scope, arg);
+		assert(self->c_func_name == NULL);
+	} else {
+		VISIT(self->c_func_name, arg);
+	}
+}
+
+void Procedure_Search(ProcedureObject *self, Object *target, ArrayObject *res) {
+	APPEND_PARENT(target, self, self->formals);
+	APPEND_PARENT(target, self, self->code);
+	APPEND_PARENT(target, self, self->c_func_name);
+	APPEND_PARENT(target, self, self->lexical_scope);
+	SEARCH(self->formals, target, res);
+	SEARCH(self->code, target, res);
+	SEARCH(self->c_func_name, target, res);
+	SEARCH(self->lexical_scope, target, res);
 }
 
 void Procedure_Print(ProcedureObject *self, FILE *f) {
@@ -126,98 +159,3 @@ void Procedure_Print(ProcedureObject *self, FILE *f) {
 	PRINT(self->formals, f);
 	fprintf(f, ", code #%zu @ %p>", self->code->co_id, &self);
 }
-
-//
-//Object *Form_Define(ProcedureObject *self, Object *form) {
-//
-//	fprintf(stderr, "in function %s: bad form: ", __FUNCTION__);
-//	PRINT(form, stderr);
-//	fputc('\n', stderr);
-//	exit(EXIT_FAILURE);
-//
-//	RETURN_NONE;
-//}
-//
-//Object *Form_Set(ProcedureObject *self, Object *form) {
-//	assert(IS_LIST(form));
-//	Object *var = NULL, *def_formals = NULL, *expr = NULL;
-//	if (ParseArgs(form, "(set! ? ?)", &var, &expr) == 2) {
-//		assert(IS_TYPE(var, Symbol_Type));
-//		INCREF(expr);
-//		Object *e = EVAL(expr, self->lexical_scope);
-//		ChainMap_SetItem(self->lexical_scope, CAST(SymbolObject *, var), e);
-//		DECREF(e);
-//		DECREF(expr);
-//	} else {
-//		fprintf(stderr, "in function %s: bad form: ", __FUNCTION__);
-//		PRINT(form, stderr);
-//		fputc('\n', stderr);
-//		exit(EXIT_FAILURE);
-//	}
-//	RETURN_NONE;
-//}
-//
-//Object *Form_If(ProcedureObject *self, Object *form) {
-//	assert(IS_LIST(form));
-//	Object *test = NULL, *consequent = NULL, *alternate = NULL;
-//	if (ParseArgs(form, "(if ? ? ?)", &test, &consequent, &alternate) == 3) {
-//		INCREF(test);
-//		INCREF(consequent);
-//		INCREF(alternate);
-//		Object *e = EVAL(test, self->lexical_scope);
-//		DECREF(test);
-//		if (!IS_FALSE(e)) {
-//			DECREF(e);
-//			DECREF(alternate);
-//			return consequent;
-//		} else {
-//			DECREF(e);
-//			DECREF(consequent);
-//			return alternate;
-//		}
-//	} else if (ParseArgs(form, "(if ? ?)", &test, &consequent) == 2) {
-//		INCREF(test);
-//		INCREF(consequent);
-//		Object *e = EVAL(test, self->lexical_scope);
-//		DECREF(test);
-//		if (!IS_FALSE(e)) {
-//			DECREF(e);
-//			return consequent;
-//		} else {
-//			DECREF(e);
-//			DECREF(consequent);
-//			RETURN_NONE;
-//		}
-//	} else {
-//		fprintf(stderr, "in function %s: bad form:", __FUNCTION__);
-//		PRINT(form, stderr);
-//		fputc('\n', stderr);
-//		exit(EXIT_FAILURE);
-//	}
-//}
-//
-//Object *Builtin_NumberAdd(ProcedureObject *self, Object *args) {
-//	assert(IS_LIST(args));
-//	if (IS_NOT_NULL(args)) {
-//		Object *ans = CAR(args);
-//		Object *tmp;
-//		INCREF(ans);
-//		for (Object *e = CDR(args); !IS_NULL(e); e = CDR(e)) {
-//			MOVE_SET(tmp, ans, Number_Add(ans, CAR(e)));
-//		}
-//		return ans;
-//	} else return AS_OBJECT(Long_From_i64(0));
-//}
-//
-//Object *Builtin_NumberSub(ProcedureObject *self, Object *args) {
-//	assert(IS_LIST(args));
-//	if (IS_NOT_NULL(args)) {
-//		Object *ans = CAR(args);
-//		Object *tmp;
-//		INCREF(ans);
-//		for (Object *e = CDR(args); !IS_NULL(e); e = CDR(e)) {
-//			MOVE_SET(tmp, ans, Number_Add(ans, CAR(e)));
-//		}
-//		return ans;
-//	} else return AS_OBJECT(Long_From_i64(0));
-//}

@@ -1,4 +1,5 @@
 #include "../Include/chainmapobject.h"
+#include "../Include/arrayobject.h"
 
 TypeObject ChainMap_Type = {
 		.tp_name="ChainMap",
@@ -7,7 +8,9 @@ TypeObject ChainMap_Type = {
 		.tp_print=(print_proc) ChainMap_Print,
 		.tp_repr=(print_proc) ChainMap_Print,
 		.tp_dealloc=(dealloc_proc) ChainMap_Dealloc,
-		.tp_flags = TPFLAGS_HAVE_GC
+		.tp_flags = TPFLAGS_HAVE_GC,
+		.tp_traverse=(traverse_proc) ChainMap_Traverse,
+		.tp_search=(search_proc) ChainMap_Search,
 };
 
 size_t ChainMap_GetSize(ChainMap *self) {
@@ -25,6 +28,7 @@ ChainMap *ChainMap_New(DictObject *args[]) {
 //		INCREF(args[i]);
 		res->maps[i] = args[i];
 	}
+	gc_track(AS_OBJECT(res));
 	return res;
 }
 
@@ -38,6 +42,7 @@ ChainMap *ChainMap_NewChild(ChainMap *self, DictObject *m) {
 	for (size_t i = 0; i < n; ++i) {
 		res->maps[i + 1] = NEW_REF(self->maps[i]);
 	}
+	gc_track(AS_OBJECT(res));
 	return res;
 }
 
@@ -45,6 +50,7 @@ ChainMap *ChainMap_NewEmpty() {
 	ChainMap *res = (ChainMap *) TypeGenericAlloc(&ChainMap_Type, 1);
 	memset(res->maps, 0, sizeof(DictObject *) * 1);
 	res->maps[0] = Dict_New();
+	gc_track(AS_OBJECT(res));
 	return res;
 
 }
@@ -57,6 +63,7 @@ ChainMap *ChainMap_Parents(ChainMap *self) {
 //		INCREF(self->maps[i + 1]);
 		res->maps[i] = NEW_REF(self->maps[i + 1]);
 	}
+	gc_track(AS_OBJECT(res));
 //	DECREF(self);
 	return res;
 }
@@ -136,11 +143,38 @@ void ChainMap_Print(ChainMap *self, FILE *out) {
 	}
 	fputc(')', out);
 }
+void ChainMap_GC_Clear(ChainMap *self) {
+	size_t len = SIZE(self);
+	for (size_t i = 0; i < len; ++i) {
+		TYPE(self->maps[i])->tp_clear(self->maps[i]);
+	}
+
+}
 
 void ChainMap_Dealloc(ChainMap *self) {
 	gc_untrack(AS_OBJECT(self));
 	size_t len = SIZE(self);
 	for (size_t i = 0; i < len; ++i) {
-		DECREF(self->maps[i]);
+		CLEAR(self->maps[i]);
 	}
 }
+
+
+void ChainMap_Traverse(ChainMap *self, visit_proc visit, void *arg) {
+	size_t len = SIZE(self);
+	for (size_t i = 0; i < len; ++i) {
+		VISIT(self->maps[i], arg);
+	}
+}
+
+void ChainMap_Search(ChainMap *self, Object *target, ArrayObject *res){
+	size_t len = SIZE(self);
+	for (size_t i = 0; i < len; ++i) {
+		APPEND_PARENT(target, self, self->maps[i]);
+	}
+	for (size_t i = 0; i < len; ++i) {
+		SEARCH(self->maps[i], target, res);
+	}
+}
+
+

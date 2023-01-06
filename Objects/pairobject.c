@@ -3,6 +3,7 @@
 #include "../Include/pairobject.h"
 #include "../Include/procedureobject.h"
 #include "../Include/noneobject.h"
+#include "../Include/arrayobject.h"
 
 CompareMethods pair_compare = {
 		.cmp_equal = (int_binaryfunc) Pair_Equal,
@@ -13,7 +14,9 @@ TypeObject Pair_Type = {
 		.tp_itemsize=0,
 		.tp_print=(print_proc) Pair_Print,
 		.tp_dealloc=(dealloc_proc) Pair_Dealloc,
-		.tp_flags = TPFLAGS_HAVE_GC
+		.tp_flags = TPFLAGS_HAVE_GC,
+		.tp_traverse=(traverse_proc) Pair_Traverse,
+		.tp_search=(search_proc) Pair_Search,
 };
 TypeObject EmptyList_Type = {
 		"empty_list",
@@ -36,6 +39,7 @@ PairObject *Pair_New(Object *car, Object *cdr) {
 	if (IS_NULL(cdr) || IS_TYPE(cdr, Pair_Type)) {
 		res->is_list = AS_PAIR(cdr)->is_list;
 	} else res->is_list = 0;
+	gc_track(AS_OBJECT(res));
 	return res;
 }
 
@@ -78,8 +82,21 @@ void Pair_Repr(PairObject *self, FILE *out) {
 }
 
 void Pair_Dealloc(PairObject *self) {
-	DECREF(self->car);
-	DECREF(self->cdr);
+	gc_untrack(AS_OBJECT(self));
+	CLEAR(self->car);
+	CLEAR(self->cdr);
+}
+
+void Pair_Traverse(PairObject *self, visit_proc visit, void *arg) {
+	VISIT(self->car, arg);
+	VISIT(self->cdr, arg);
+}
+
+void Pair_Search(PairObject *self, Object *target, ArrayObject *res) {
+	APPEND_PARENT(target, self, self->car);
+	APPEND_PARENT(target, self, self->cdr);
+	SEARCH(self->car, target, res);
+	SEARCH(self->cdr, target, res);
 }
 
 // steals self
