@@ -24,7 +24,7 @@ TypeObject BaseObject_Type = {
 //		.tp_eval = Eval_Default
 };
 #ifdef FLAG_TRACK_ALL_OBJS
-Object *live_objects[100000];
+Object *live_objects[OBJECT_MAX_NUM];
 static int n_objects;
 static int n_live_objs;
 #endif

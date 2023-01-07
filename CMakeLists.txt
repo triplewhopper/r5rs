@@ -4,42 +4,13 @@ project(r5rs C)
 set(CMAKE_C_STANDARD 99)
 set(CMAKE_CXX_FLAGS -Wall)
 
-include_directories(Objects/)
-add_executable(r5rs
-#        Objects/object.c
-#        Objects/typeobject.c
-#        Objects/floatobject.c
-#        Objects/complexobject.c
-#        Objects/longobject.c
-#        Objects/fractionobject.c
-#        Objects/numberobject.c
-#        Objects/booleanobject.c
-#        Objects/pairobject.c
-#        Objects/charobject.c
-#        Objects/stringobject.c
-#        Objects/fractionobject.c
-#        Objects/vectorobject.c
-#        Objects/symbolobject.c
-#        Objects/noneobject.c
-#        Objects/arrayobject.c
-#        Objects/dictobject.c
-#        Objects/chainmap.c
-#        Objects/procedureobject.c
-#        Objects/frameobject.c
-#        Objects/vmobject.c
-#        Objects/codeobject.c
-        library/builtins.c
-        library/string2number.c
-        Lexer/token.c
-        Lexer/lexer.c
-        Parser/parser.c
-        main.c)
+include_directories(Include)
 
-add_executable(lexer_test
-        Lexer/lexer.c
-        Lexer/token.c
-        Lexer/lexer_test.c
-        Objects/object.c
-        Objects/stringobject.c)
+aux_source_directory(Objects src_list)
+aux_source_directory(Lexer src_list)
+aux_source_directory(Parser src_list)
+aux_source_directory(library src_list)
 
-add_executable(array_test Objects/object.c Objects/arrayobject.c Tests/arrayobject_test.c)
+add_executable(r5rs main.c ${src_list})
+
+#add_executable(array_test Objects/object.c Objects/arrayobject.c Tests/arrayobject_test.c)

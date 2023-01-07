@@ -5,6 +5,7 @@
 #include "typedefs.h"
 
 //#define FLAG_TRACK_ALL_OBJS
+//#define OBJECT_MAX_NUM 100000
 struct object {
 	int ob_refcnt;
 	TypeObject *ob_type;
