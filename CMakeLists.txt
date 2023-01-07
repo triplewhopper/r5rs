@@ -5,24 +5,6 @@ set(CMAKE_C_STANDARD 99)
 set(CMAKE_CXX_FLAGS -Wall)
 
 add_executable(r5rs
-#        Include/typedefs.h
-#        Include/object.h
-#        Include/typeobject.h
-#        Include/floatobject.h
-#        Include/complexobject.h
-#        Include/longobject.h
-#        Include/fractionobject.h
-#        Include/numberobject.h
-#        Include/booleanobject.h
-#        Include/pairobject.h
-#        Include/charobject.h
-#        Include/stringobject.h
-#        Include/vectorobject.h
-#        Include/symbolobject.h
-#        Include/noneobject.h
-#        Include/dictobject.h
-#        Include/chainmapobject.h
-#
         Objects/object.c
         Objects/typeobject.c
         Objects/floatobject.c
@@ -38,33 +20,22 @@ add_executable(r5rs
         Objects/vectorobject.c
         Objects/symbolobject.c
         Objects/noneobject.c
+        Objects/arrayobject.c
         Objects/dictobject.c
-        library/builtins.h
-        library/builtins.c
-#        Lexer/lexer.h
-#        Lexer/token.h
-        Lexer/token.c
-        main.c
-        Parser/parser.c
-        Lexer/lexer.c
-#        library/string2number.h
-        library/string2number.c
-#        Include/procedureobject.h
-        Objects/procedureobject.c
-#        library/builtins.h
-        Objects/frameobject.c
-        Include/vmobject.h
-        Objects/vmobject.c
-#        Include/codeobject.h
-        Objects/codeobject.c
         Objects/chainmap.c
-#        Include/arrayobject.h
-        Objects/arrayobject.c)
+        Objects/procedureobject.c
+        Objects/frameobject.c
+        Objects/vmobject.c
+        Objects/codeobject.c
+        library/builtins.c
+        library/string2number.c
+        Lexer/token.c
+        Lexer/lexer.c
+        Parser/parser.c
+        main.c)
 
 add_executable(lexer_test
-        Lexer/lexer.h
         Lexer/lexer.c
-        Lexer/token.h
         Lexer/token.c
         Lexer/lexer_test.c
         Objects/object.c
