@@ -6,7 +6,7 @@
 #include "../Include/vectorobject.h"
 #include "../Include/pairobject.h"
 #include "../Include/typeobject.h"
-#include "../library/runtime.h"
+#include "../library/builtins.h"
 
 static Object *syntax_error(TokenObject *t) {
 	fprintf(stderr, "syntax error: unexpected ");

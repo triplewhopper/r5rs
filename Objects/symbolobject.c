@@ -4,6 +4,7 @@
 #include "../Include/dictobject.h"
 #include "../Include/arrayobject.h"
 #include <assert.h>
+#include <stdarg.h>
 
 CompareMethods symbol_compare = {
 		.cmp_eq = (int_binaryfunc) Symbol_Eqv,
@@ -33,9 +34,19 @@ SymbolObject *Symbol_FromString(StringObject *s) {
 }
 
 void Symbol_Print(SymbolObject *self, FILE *out) {
-	fprintf(out, "`");
+//	fprintf(out, "'");
 	PRINT(self->name, out);
-	fprintf(out, "`");
+//	fprintf(out, "`");
+}
+
+SymbolObject *Symbol_Format(const char *format, ...) {
+	va_list ap;
+	va_start(ap, format);
+	StringObject *str = String_VFormat(format, ap);
+	SymbolObject *res = Symbol_FromString(str);
+	DECREF(str);
+	va_end(ap);
+	return res;
 }
 
 int Symbol_Eqv(SymbolObject *self, Object *other) {
@@ -50,16 +61,16 @@ int Symbol_Eqv_CStr(SymbolObject *self, const char *other) {
 }
 
 void Symbol_Repr(SymbolObject *self, FILE *out) {
-	fprintf(out, "`");
+//	fprintf(out, "'");
 	PRINT(self->name, out);
-	fprintf(out, "`");
+//	fprintf(out, "`");
 }
 
 void Symbol_Dealloc(SymbolObject *self) {
 	DECREF(self->name);
 }
 
-void Symbol_Search(SymbolObject *self, Object *target, ArrayObject *res){
+void Symbol_Search(SymbolObject *self, Object *target, ArrayObject *res) {
 	APPEND_PARENT(target, self, self->name);
 	SEARCH(self->name, target, res);
 }
@@ -69,6 +80,7 @@ void GlobalSymbolsInit() {
 	global_symbols.cond = AS_OBJECT(Symbol_FromCStr("cond"));
 	global_symbols.define = AS_OBJECT(Symbol_FromCStr("define"));
 	global_symbols.cond_else = AS_OBJECT(Symbol_FromCStr("else"));
+	global_symbols.cond_arrow = AS_OBJECT(Symbol_FromCStr("=>"));
 	global_symbols.if_expr = AS_OBJECT(Symbol_FromCStr("if"));
 	global_symbols.lambda = AS_OBJECT(Symbol_FromCStr("lambda"));
 	global_symbols.let = AS_OBJECT(Symbol_FromCStr("let"));
@@ -81,6 +93,7 @@ void GlobalSymbolsFinalize() {
 	DECREF(global_symbols.cond);
 	DECREF(global_symbols.define);
 	DECREF(global_symbols.cond_else);
+	DECREF(global_symbols.cond_arrow);
 	DECREF(global_symbols.if_expr);
 	DECREF(global_symbols.lambda);
 	DECREF(global_symbols.let);

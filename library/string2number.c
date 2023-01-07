@@ -8,18 +8,25 @@
 #include "../Include/stringobject.h"
 #include "../Include/numberobject.h"
 #include "../Include/booleanobject.h"
-
+//#define VERBOSE_ERR_MSG
 #define RETURN_WHEN_NULL(x) do { if((x)==NULL) return NULL; }while(0)
 #define CLEAR_ERR_MSG(e) do { assert(e); free(*(e)); *(e) = NULL; } while (0)
 #define ASSERT_HAS_ERR(e) assert((e) != NULL && *(e) != NULL)
 #define ASSERT_NO_ERR(e) do { assert(!(e)||*(e)==NULL); } while (0)
-#define LOC_FORMAT "in file %.0s, function %s, line %d: "
+#ifdef VERBOSE_ERR_MSG
+#define LOC_FORMAT "in file %s, function %s, line %d: "
+#define SET_ERR_AND_RETURN_0(fmt, ...) \
+	do{ \
+		set_err_format(err_msg, LOC_FORMAT fmt, __FILE__, __FUNCTION__, __LINE__, ## __VA_ARGS__);\
+		return 0; \
+	}while(0)
+#else
 #define SET_ERR_AND_RETURN_0(fmt, ...) \
     do{ \
-        set_err_format(err_msg, LOC_FORMAT fmt, __FILE__, __FUNCTION__, __LINE__, ## __VA_ARGS__);\
+        set_err_format(err_msg, fmt, ## __VA_ARGS__);\
         return 0; \
     }while(0)
-
+#endif
 enum Radix {
 	RADIX_BINARY = 2, RADIX_OCTAL = 8, RADIX_DECIMAL = 10, RADIX_HEX = 16
 };
@@ -295,8 +302,7 @@ match_ureal(StringObject *self, size_t i, enum Radix radix, char **err_msg) {
 static size_t
 match_real(StringObject *self, size_t i, enum Radix radix, char **err_msg) {
 	if (i >= String_GetSize(self)) {
-		set_err_format(err_msg, LOC_FORMAT "end of string", __FILE__, __FUNCTION__, __LINE__);
-		return 0;
+		SET_ERR_AND_RETURN_0("end of string");
 	}
 	size_t has_sign = self->ob_sval[i] == '+' || self->ob_sval[i] == '-';
 	size_t n = match_ureal(self, i + has_sign, radix, err_msg);
@@ -308,8 +314,7 @@ match_real(StringObject *self, size_t i, enum Radix radix, char **err_msg) {
 static size_t
 match_complex(StringObject *self, size_t i, enum Radix radix, char **err_msg) {
 	if (i >= String_GetSize(self)) {
-		set_err_format(err_msg, LOC_FORMAT "end of string", __FILE__, __FUNCTION__, __LINE__);
-		return 0;
+		SET_ERR_AND_RETURN_0("end of string");
 	}
 	/* <complex R> ->
 	 * 1	| (+|-) <ureal R>
@@ -358,8 +363,8 @@ match_complex(StringObject *self, size_t i, enum Radix radix, char **err_msg) {
 						if (tolower(cur[i + has_sign1 + a + 1 + b]) == 'i') {
 							return has_sign1 + a + 1 + b + 1;
 						}
-						set_err_format(err_msg, LOC_FORMAT "expect imaginary unit 'i' in pattern <real>%c<real>i",
-									   __FILE__, __FUNCTION__, __LINE__, cur[i + has_sign1 + a]);
+						SET_ERR_AND_RETURN_0("expect imaginary unit 'i' in pattern <real>%c<real>i",
+											 cur[i + has_sign1 + a]);
 						return 0;
 					}
 					ASSERT_HAS_ERR(err_msg);

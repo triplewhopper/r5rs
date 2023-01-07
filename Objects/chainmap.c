@@ -143,13 +143,13 @@ void ChainMap_Print(ChainMap *self, FILE *out) {
 	}
 	fputc(')', out);
 }
-void ChainMap_GC_Clear(ChainMap *self) {
-	size_t len = SIZE(self);
-	for (size_t i = 0; i < len; ++i) {
-		TYPE(self->maps[i])->tp_clear(self->maps[i]);
-	}
-
-}
+//void ChainMap_GC_Clear(ChainMap *self) {
+//	size_t len = SIZE(self);
+//	for (size_t i = 0; i < len; ++i) {
+//		TYPE(self->maps[i])->tp_clear(self->maps[i]);
+//	}
+//
+//}
 
 void ChainMap_Dealloc(ChainMap *self) {
 	gc_untrack(AS_OBJECT(self));

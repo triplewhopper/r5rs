@@ -1,0 +1,164 @@
+code object (id=1): 
+  0 VM_LOAD symbol object and-impl
+  1 VM_LOAD pair object (lst)
+  2 VM_LOAD code object and-impl (#2)
+  3 VM_MAKE_FUNCTION
+  4 VM_DEFINE
+  5 VM_LOAD None object #<unspecified>
+
+code object and-impl (id=2): 
+  0 VM_LOAD symbol object null?
+  1 VM_LOOKUP
+  2 VM_LOAD symbol object cdr
+  3 VM_LOOKUP
+  4 VM_LOAD symbol object lst
+  5 VM_LOOKUP
+  6 VM_LOAD empty_list object ()
+  7 VM_CONS
+  8 VM_CALL
+  9 VM_LOAD empty_list object ()
+ 10 VM_CONS
+ 11 VM_CALL
+ 12 VM_JUMP_IF_FALSE 9
+ 13 VM_LOAD symbol object car
+ 14 VM_LOOKUP
+ 15 VM_LOAD symbol object lst
+ 16 VM_LOOKUP
+ 17 VM_LOAD empty_list object ()
+ 18 VM_CONS
+ 19 VM_TAIL_CALL
+ 20 VM_JUMP_FORWARD 23
+ 21 VM_LOAD symbol object car
+ 22 VM_LOOKUP
+ 23 VM_LOAD symbol object lst
+ 24 VM_LOOKUP
+ 25 VM_LOAD empty_list object ()
+ 26 VM_CONS
+ 27 VM_CALL
+ 28 VM_JUMP_IF_FALSE 14
+ 29 VM_LOAD symbol object and-impl
+ 30 VM_LOOKUP
+ 31 VM_LOAD symbol object cdr
+ 32 VM_LOOKUP
+ 33 VM_LOAD symbol object lst
+ 34 VM_LOOKUP
+ 35 VM_LOAD empty_list object ()
+ 36 VM_CONS
+ 37 VM_CALL
+ 38 VM_LOAD empty_list object ()
+ 39 VM_CONS
+ 40 VM_TAIL_CALL
+ 41 VM_JUMP_FORWARD 2
+ 42 VM_LOAD boolean object #f
+
+code object (id=3): 
+  0 VM_LOAD symbol object and
+  1 VM_LOAD symbol object x
+  2 VM_LOAD code object and (#4)
+  3 VM_MAKE_FUNCTION
+  4 VM_DEFINE
+  5 VM_LOAD None object #<unspecified>
+
+code object and (id=4): 
+  0 VM_LOAD symbol object null?
+  1 VM_LOOKUP
+  2 VM_LOAD symbol object x
+  3 VM_LOOKUP
+  4 VM_LOAD empty_list object ()
+  5 VM_CONS
+  6 VM_CALL
+  7 VM_JUMP_IF_FALSE 3
+  8 VM_LOAD boolean object #t
+  9 VM_JUMP_FORWARD 8
+ 10 VM_LOAD symbol object and-impl
+ 11 VM_LOOKUP
+ 12 VM_LOAD symbol object x
+ 13 VM_LOOKUP
+ 14 VM_LOAD empty_list object ()
+ 15 VM_CONS
+ 16 VM_TAIL_CALL
+
+code object (id=5): 
+  0 VM_LOAD symbol object and
+  1 VM_LOOKUP
+  2 VM_LOAD symbol object =
+  3 VM_LOOKUP
+  4 VM_LOAD long object 2
+  5 VM_LOAD long object 2
+  6 VM_LOAD empty_list object ()
+  7 VM_CONS
+  8 VM_CONS
+  9 VM_CALL
+ 10 VM_LOAD symbol object >
+ 11 VM_LOOKUP
+ 12 VM_LOAD long object 2
+ 13 VM_LOAD long object 1
+ 14 VM_LOAD empty_list object ()
+ 15 VM_CONS
+ 16 VM_CONS
+ 17 VM_CALL
+ 18 VM_LOAD empty_list object ()
+ 19 VM_CONS
+ 20 VM_CONS
+ 21 VM_CALL
+
+code object (id=6): 
+  0 VM_LOAD symbol object and
+  1 VM_LOOKUP
+  2 VM_LOAD symbol object =
+  3 VM_LOOKUP
+  4 VM_LOAD long object 2
+  5 VM_LOAD long object 2
+  6 VM_LOAD empty_list object ()
+  7 VM_CONS
+  8 VM_CONS
+  9 VM_CALL
+ 10 VM_LOAD symbol object <
+ 11 VM_LOOKUP
+ 12 VM_LOAD long object 2
+ 13 VM_LOAD long object 1
+ 14 VM_LOAD empty_list object ()
+ 15 VM_CONS
+ 16 VM_CONS
+ 17 VM_CALL
+ 18 VM_LOAD empty_list object ()
+ 19 VM_CONS
+ 20 VM_CONS
+ 21 VM_CALL
+
+code object (id=7): 
+  0 VM_LOAD symbol object and
+  1 VM_LOOKUP
+  2 VM_LOAD long object 1
+  3 VM_LOAD long object 2
+  4 VM_LOAD symbol object c
+  5 VM_LOAD pair object ("jjj" f g)
+  6 VM_LOAD empty_list object ()
+  7 VM_CONS
+  8 VM_CONS
+  9 VM_CONS
+ 10 VM_CONS
+ 11 VM_CALL
+
+code object (id=8): 
+  0 VM_LOAD symbol object and
+  1 VM_LOOKUP
+  2 VM_LOAD empty_list object ()
+  3 VM_CALL
+
+code object (id=9): 
+  0 VM_LOAD symbol object not
+  1 VM_LOAD pair object (x)
+  2 VM_LOAD code object not (#10)
+  3 VM_MAKE_FUNCTION
+  4 VM_DEFINE
+  5 VM_LOAD None object #<unspecified>
+
+code object not (id=10): 
+  0 VM_LOAD symbol object x
+  1 VM_LOOKUP
+  2 VM_JUMP_IF_FALSE 3
+  3 VM_LOAD boolean object #f
+  4 VM_JUMP_FORWARD 2
+  5 VM_LOAD boolean object #t
+

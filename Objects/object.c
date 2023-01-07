@@ -126,7 +126,9 @@ int gc_is_collecting;
 
 void DecRef(Object *op) {
 	assert(op->finalized == 1 || op->ob_refcnt > 0);
+#ifdef FLAG_TRACK_ALL_OBJS
 	assert(op->obj_index == 0 || live_objects[op->obj_index] != NULL);
+#endif
 	if (!op->finalized && --op->ob_refcnt == 0) {
 		op->finalized = 1;
 		TypeObject *t = TYPE(op);
@@ -163,7 +165,6 @@ void gc_finalize() {
 
 void gc_track(Object *obj) {
 	if (!Array_Count(gc_objs, &obj)) {
-
 //		for (size_t k = 0; k < SIZE(gc_objs); ++k) {
 //			assert(Array_At(Object * , gc_objs, k)->obj_index > 0);
 //		}
@@ -220,21 +221,21 @@ int gc_visit_proc2(Object *obj, void *arg) {
 			size_t i = Array_Find(gc_unreachable, &obj, 0);
 			assert(i < SIZE(gc_unreachable));
 			Array_Remove(gc_unreachable, i);
-			assert(Array_Find(gc_objs, &obj, 0) == SIZE(gc_objs));
-			Array_Append(gc_objs, &obj);
+			assert(Array_Find(arg, &obj, 0) == SIZE(arg));
+			Array_Append(arg, &obj);
 			GC_HEADER(obj)->gc_ref = 1;
 		} else {
-			assert(Array_Find(gc_objs, &obj, 0) < SIZE(gc_objs));
+			assert(Array_Find(arg, &obj, 0) < SIZE(arg));
 			assert(Array_Find(gc_unreachable, &obj, 0) == SIZE(gc_unreachable));
 		}
 //		TRAVERSE(obj, gc_visit_proc2, arg);
 	}
 	return 0;
 }
+
 int gc_visit_proc3(Object *obj, void *arg) {
 	if (TYPE(obj)->tp_flags & TPFLAGS_HAVE_GC) {
-		if (GC_HEADER(obj)->gc_ref == 0) {
-			;
+		if (GC_HEADER(obj)->gc_ref == 0) { ;
 		} else {
 			DECREF(obj);
 		}
@@ -243,6 +244,9 @@ int gc_visit_proc3(Object *obj, void *arg) {
 	}
 	return 0;
 }
+
+#ifdef FLAG_TRACK_ALL_OBJS
+
 void get_parents(Object *obj) {
 	for (size_t i = 0; i < n_objects; ++i) {
 		if (live_objects[i] != NULL) live_objects[i]->searched = 0;
@@ -254,6 +258,8 @@ void get_parents(Object *obj) {
 	DECREF(parents);
 }
 
+#endif
+
 void gc_collect() {
 	assert(!gc_is_collecting);
 	gc_is_collecting = 1;
@@ -262,7 +268,9 @@ void gc_collect() {
 	for (size_t i = 0; i < SIZE(gc_objs); ++i) {
 		Object *obj = Array_At(Object *, gc_objs, i);
 		assert(TYPE(obj)->tp_flags & TPFLAGS_HAVE_GC);
+#ifdef FLAG_TRACK_ALL_OBJS
 		assert(live_objects[obj->obj_index] != NULL);
+#endif
 		GC_HEADER(obj)->gc_ref = REFCNT(obj);
 		GC_HEADER(obj)->visited = 0;
 	}
@@ -284,28 +292,27 @@ void gc_collect() {
 	assert(SIZE(survivals) + SIZE(gc_unreachable) == SIZE(gc_objs));
 	Array_Unlock(gc_objs);
 	Array_Clear(gc_objs);
-	Array_Lock(survivals);
+//	for (size_t i = 0; i < SIZE(survivals); ++i) {
+//		Object *obj = Array_At(Object *, survivals, i);
+//		if (GC_HEADER(obj)->gc_ref > 0) {
+//			Array_Append(gc_objs, &obj);
+//		}
+//	}
 	for (size_t i = 0; i < SIZE(survivals); ++i) {
 		Object *obj = Array_At(Object *, survivals, i);
 		if (GC_HEADER(obj)->gc_ref > 0) {
-			Array_Append(gc_objs, &obj);
+			TRAVERSE(obj, gc_visit_proc2, survivals);
 		}
 	}
-	for (size_t i = 0; i < SIZE(survivals); ++i) {
-		Object *obj = Array_At(Object *, survivals, i);
-		if (GC_HEADER(obj)->gc_ref > 0) {
-			TRAVERSE(obj, gc_visit_proc2, NULL);
-		}
-	}
-	Array_Unlock(survivals);
+	Array_Swap(gc_objs, survivals);
 //	get_parents(*(Object **) Array_GetItem(survivals, 0));
 	Array_Lock(gc_unreachable);
-	for(size_t i = 0; i < SIZE(gc_unreachable); ++i) {
+	for (size_t i = 0; i < SIZE(gc_unreachable); ++i) {
 		Object *obj = Array_At(Object *, gc_unreachable, i);
 		assert(REFCNT(obj) > 0);
 		TRAVERSE(obj, gc_visit_proc3, NULL);
 	}
-	for(size_t i = 0; i < SIZE(gc_unreachable); ++i) {
+	for (size_t i = 0; i < SIZE(gc_unreachable); ++i) {
 		Object *obj = Array_At(Object *, gc_unreachable, i);
 		assert(REFCNT(obj) > 0);
 		Object_Dealloc(obj);

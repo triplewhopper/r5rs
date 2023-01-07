@@ -73,7 +73,7 @@ StringObject *String_FromCStr(const char *s) {
 }
 
 StringObject *String_FromLiteral(StringObject *literal) {
-	size_t i = 0, j = 1, len = String_GetSize(literal);
+	size_t i = 0, j = 1, len = SIZE(literal);
 	assert(len >= 2);
 	assert(literal->ob_sval[0] == '"');
 	assert(literal->ob_sval[len - 1] == '"');
@@ -95,7 +95,19 @@ StringObject *String_FromLiteral(StringObject *literal) {
 			assert(flag);
 		}
 	}
-	StringObject *res = String_FromCStrN(s, j);
+	StringObject *res = String_FromCStrN(s, j - 1);
+	free(s);
+	return res;
+}
+
+StringObject *String_VFormat(const char *format, va_list ap) {
+	char *s = NULL;
+	if (vasprintf(&s, format, ap) == -1) {
+		perror(NULL);
+		exit(EXIT_FAILURE);
+	}
+	assert(s);
+	StringObject *res = String_FromCStr(s);
 	free(s);
 	return res;
 }
@@ -103,15 +115,8 @@ StringObject *String_FromLiteral(StringObject *literal) {
 StringObject *String_Format(const char *format, ...) {
 	va_list ap;
 	va_start(ap, format);
-	char *s = NULL;
-	if (vasprintf(&s, format, ap) == -1) {
-		perror(NULL);
-		exit(EXIT_FAILURE);
-	}
+	StringObject *res = String_VFormat(format, ap);
 	va_end(ap);
-	assert(s);
-	StringObject *res = String_FromCStr(s);
-	free(s);
 	return res;
 }
 
@@ -169,7 +174,7 @@ void String_Print(StringObject *self, FILE *out) {
 
 void String_Repr(StringObject *self, FILE *out) {
 	fputc('\"', out);
-	for (size_t i = 0, size = String_GetSize(self); i < size; ++i) {
+	for (size_t i = 0, size = SIZE(self); i < size; ++i) {
 		int c = (int) self->ob_sval[i];
 		if (isprint(c) && c != '\\' && c != '\'' && c != '\"') {
 			fputc(self->ob_sval[i], out);

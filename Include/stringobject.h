@@ -23,6 +23,8 @@ StringObject *String_FromCStr(const char *);
 
 StringObject *String_FromLiteral(StringObject *);
 
+StringObject *String_VFormat(const char *format, va_list ap);
+
 StringObject *String_Format(const char *, ...);
 
 size_t String_GetSize(StringObject *self);

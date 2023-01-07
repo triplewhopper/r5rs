@@ -6,14 +6,8 @@
 #include <assert.h>
 #include "typedefs.h"
 
-struct method_def {
-	const char *ml_name;
-
-	Object (*ml_meth)(Object *, Object *);
-
-	int ml_flags;
-	const char *ml_doc;
-};
+//#define __DEBUG__
+#define TPFLAGS_HAVE_GC 1
 
 struct number_methods {
 	binaryfunc nb_add;
@@ -51,11 +45,12 @@ struct number_methods {
 	int_binaryfunc nb_lt;
 	int_binaryfunc nb_le;
 };
-struct cmp_methods{
+struct cmp_methods {
 	int_binaryfunc cmp_eq;
 	int_binaryfunc cmp_eqv;
 	int_binaryfunc cmp_equal;
 };
+
 struct type_object {
 	const char *const tp_name;
 	const size_t tp_basicsize;
@@ -71,32 +66,43 @@ struct type_object {
 	CompareMethods *tp_cmp;
 	size_t tp_flags;
 	traverse_proc tp_traverse;
-	int_unaryfunc tp_clear;
+//	int_unaryfunc tp_clear;
 	search_proc tp_search;
 
 	struct type_object *tp_base;
 };
-#define TPFLAGS_HAVE_GC 1
-void Type_SetBaseClass(TypeObject *t, TypeObject *base);
 
-int Type_IsSubClass(TypeObject *, TypeObject *);
+
+
+void Type_InitTypeObjects();
 
 extern TypeObject BaseObject_Type;
+
 extern TypeObject Boolean_Type;
-extern TypeObject Char_Type;
-extern TypeObject Complex_Type;
+extern TypeObject Long_Type;
 extern TypeObject Float_Type;
 extern TypeObject Fraction_Type;
-extern TypeObject Long_Type;
-extern TypeObject None_Type;
+extern TypeObject Complex_Type;
 extern TypeObject Pair_Type;
+extern TypeObject None_Type;
+extern TypeObject Char_Type;
 extern TypeObject String_Type;
 extern TypeObject Symbol_Type;
 extern TypeObject Vector_Type;
+extern TypeObject Procedure_Type;
+
+extern TypeObject Token_Type;
 extern TypeObject Dict_Type;
-//extern TypeObject DictNode_Type;
+extern TypeObject Array_Type;
 extern TypeObject ChainMap_Type;
-//#define __DEBUG__
+
+extern TypeObject Lexer_Type;
+extern TypeObject Code_Type;
+extern TypeObject Frame_Type;
+extern TypeObject VirtualMachine_Type;
+
+
+
 #define PRINT(obj, out) TYPE(obj)->tp_print(AS_OBJECT(obj), out)
 
 #ifdef __DEBUG__
@@ -109,9 +115,9 @@ extern TypeObject ChainMap_Type;
 #define TRAVERSE(obj, visit, arg) TYPE(obj)->tp_traverse(AS_OBJECT(obj), visit, arg)
 #define VISIT(obj, arg) visit(AS_OBJECT(obj), arg)
 #define SEARCH(obj, target, res) \
-	do{ \
-		if((obj) != NULL && !AS_OBJECT(obj)->searched){ \
-			AS_OBJECT(obj)->searched = 1; \
+    do{ \
+        if((obj) != NULL && !AS_OBJECT(obj)->searched){ \
+            AS_OBJECT(obj)->searched = 1; \
             if(TYPE(obj)->tp_search) TYPE(obj)->tp_search(AS_OBJECT(obj), target, res); \
         } \
     }while(0)

@@ -1,0 +1,96 @@
+code object (id=1): 
+  0 VM_LOAD symbol object `a`
+  1 VM_LOAD long object 100
+  2 VM_DEFINE
+  3 VM_LOAD None object #<unspecified>
+
+code object (id=2): 
+  0 VM_LOAD symbol object `b`
+  1 VM_LOAD long object 1
+  2 VM_DEFINE
+  3 VM_LOAD None object #<unspecified>
+
+code object (id=3): 
+  0 VM_LOAD pair object (`a` `b` `c`)
+  1 VM_LOAD code object `let$1` (#4)
+  2 VM_MAKE_FUNCTION
+  3 VM_LOAD long object 10
+  4 VM_LOAD symbol object `+`
+  5 VM_LOOKUP
+  6 VM_LOAD symbol object `a`
+  7 VM_LOOKUP
+  8 VM_LOAD long object 1
+  9 VM_LOAD empty_list object ()
+ 10 VM_CONS
+ 11 VM_CONS
+ 12 VM_CALL
+ 13 VM_LOAD symbol object `-`
+ 14 VM_LOOKUP
+ 15 VM_LOAD symbol object `b`
+ 16 VM_LOOKUP
+ 17 VM_LOAD long object 1
+ 18 VM_LOAD empty_list object ()
+ 19 VM_CONS
+ 20 VM_CONS
+ 21 VM_CALL
+ 22 VM_LOAD empty_list object ()
+ 23 VM_CONS
+ 24 VM_CONS
+ 25 VM_CONS
+ 26 VM_CALL
+
+code object `let$1` (id=4): 
+  0 VM_LOAD pair object (`a` `b` `c`)
+  1 VM_LOAD code object `let$2` (#5)
+  2 VM_MAKE_FUNCTION
+  3 VM_LOAD symbol object `c`
+  4 VM_LOOKUP
+  5 VM_LOAD symbol object `+`
+  6 VM_LOOKUP
+  7 VM_LOAD symbol object `a`
+  8 VM_LOOKUP
+  9 VM_LOAD long object 1
+ 10 VM_LOAD empty_list object ()
+ 11 VM_CONS
+ 12 VM_CONS
+ 13 VM_CALL
+ 14 VM_LOAD pair object (`b`)
+ 15 VM_LOAD code object `let$3` (#6)
+ 16 VM_MAKE_FUNCTION
+ 17 VM_LOAD long object 9
+ 18 VM_LOAD empty_list object ()
+ 19 VM_CONS
+ 20 VM_CALL
+ 21 VM_LOAD empty_list object ()
+ 22 VM_CONS
+ 23 VM_CONS
+ 24 VM_CONS
+ 25 VM_CALL
+
+code object `let$2` (id=5): 
+  0 VM_LOAD symbol object `+`
+  1 VM_LOOKUP
+  2 VM_LOAD symbol object `a`
+  3 VM_LOOKUP
+  4 VM_LOAD symbol object `b`
+  5 VM_LOOKUP
+  6 VM_LOAD symbol object `c`
+  7 VM_LOOKUP
+  8 VM_LOAD empty_list object ()
+  9 VM_CONS
+ 10 VM_CONS
+ 11 VM_CONS
+ 12 VM_CALL
+
+code object `let$3` (id=6): 
+  0 VM_LOAD symbol object `-`
+  1 VM_LOOKUP
+  2 VM_LOAD symbol object `b`
+  3 VM_LOOKUP
+  4 VM_LOAD symbol object `a`
+  5 VM_LOOKUP
+  6 VM_LOAD empty_list object ()
+  7 VM_CONS
+  8 VM_CONS
+  9 VM_CALL
+

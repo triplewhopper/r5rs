@@ -118,16 +118,14 @@ static int get_next_token(PosPtr current, TokenObject **token) {
 }
 
 // returns new ref
-static StringObject *read(FILE *f) {
+StringObject *read_all(FILE *f) {
 	assert(f != NULL);
 	size_t size = 0;
 	char *s = NULL;
 	FILE *buf = open_memstream(&s, &size);
 	assert(buf != NULL);
-	int c = fgetc(f);
-	while (c != EOF) {
+	for (int c = fgetc(f); c != EOF; c = fgetc(f)) {
 		fputc(c, buf);
-		c = fgetc(f);
 	}
 	fclose(buf);
 	StringObject *res = String_FromCStrN(s, size);
@@ -158,7 +156,8 @@ LexerObject *Lexer_FromFile(const char *filename) {
 	assert(lexer);
 	SIZE(lexer) = 0;
 	lexer->f = fopen(filename, "r");
-	lexer->s = read(lexer->f);
+	assert(lexer->f);
+	lexer->s = read_all(lexer->f);
 	lexer->current = (PosPtr) {{1, 1}, lexer->s->ob_sval};
 	lexer->cur = 0;
 	lexer->token_buffer = Array_New(0, sizeof(TokenObject *));
@@ -178,9 +177,27 @@ LexerObject *Lexer_FromCStr(const char *s) {
 	lexer->pos_ptr = Array_New(0, sizeof(PosPtr));
 	return lexer;
 }
+LexerObject *Lexer_FromString(StringObject *s){
+	LexerObject *lexer = CAST(LexerObject*, TypeGenericAlloc(&Lexer_Type, 0));
+	assert(lexer);
+	SIZE(lexer) = 0;
+	lexer->f = NULL;
+	lexer->s = NEW_REF(s);
+	lexer->current = (PosPtr) {{1, 1}, lexer->s->ob_sval};
+	lexer->cur = 0;
+	lexer->token_buffer = Array_New(0, sizeof(TokenObject *));
+	lexer->pos_ptr = Array_New(0, sizeof(PosPtr));
+	return lexer;
 
+}
 #define TokenAt(lexer, index) Array_At(TokenObject *, (lexer)->token_buffer, (index))
 
+void Lexer_Extend(LexerObject *lexer, const char *s){
+	StringObject *more = String_FromCStr(s);
+	StringObject *tmp;
+	MOVE_SET(tmp, lexer->s, String_Add(lexer->s, more));
+	DECREF(more);
+}
 void Lexer_Dealloc(LexerObject *lexer) {
 	if (lexer->f != NULL) {
 		fclose(lexer->f);
@@ -229,7 +246,8 @@ TokenObject *Lexer_PeekForwardTokenBy(LexerObject *lexer, size_t n_lookahead) {
 		TokenObject *t = NULL;
 		int v = Lexer_GetNextToken(lexer, &t);
 		if (v != 0) {
-			fprintf(stderr, "no more tokens.\n");
+//			fprintf(stderr, "no more tokens.\n");
+			lexer->cur = cur;
 			return NULL;
 		}
 		DECREF(t);

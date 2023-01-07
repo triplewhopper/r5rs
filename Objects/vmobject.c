@@ -10,7 +10,7 @@
 #include "../Include/numberobject.h"
 #include "../Include/vmobject.h"
 #include "../Include/codeobject.h"
-#include "../library/runtime.h"
+#include "../library/builtins.h"
 #include "../Parser/parser.h"
 
 TypeObject VirtualMachine_Type = {
@@ -61,14 +61,14 @@ static Object *top(Object *stack) {
 	return NewRef(CAR(stack));
 }
 
-// steals o.
-void VirtualMachine_Push(VirtualMachineObject *self, Object *o) {
-	push(self, o);
-}
+//// steals o.
+//void VirtualMachine_Push(VirtualMachineObject *self, Object *o) {
+//	push(self, o);
+//}
 
-void VirtualMachine_Pop(VirtualMachineObject *self) {
-	pop(self);
-}
+//void VirtualMachine_Pop(VirtualMachineObject *self) {
+//	pop(self);
+//}
 
 static Object *call_c_func(CFunction *f, Object *args) {
 	size_t argc = Pair_ListLength(args), i = 0;
@@ -89,10 +89,6 @@ int VirtualMachine_Call(VirtualMachineObject *self, Object *args, ProcedureObjec
 		Object *res = call_c_func(c_func, args);
 		if (res == NULL) return -1;
 		push(self, res);
-//		printf("return value ");
-//		PRINT(res, stdout);
-//		printf("\n");
-//		DECREF(res);
 	} else {
 		FrameObject *tmp2 = NULL;
 		MOVE_SET(tmp2, self->frame, Frame_New(self->frame, func));
@@ -198,6 +194,22 @@ int VirtualMachine_EvalFrame(VirtualMachineObject *vm) {
 					pop(vm);
 					vm->frame->pc++;
 					break;
+				case VM_SWAP: {
+					Object *y = top(vm->operands);
+					pop(vm);
+					Object *x = top(vm->operands);
+					pop(vm);
+					push(vm, y);
+					push(vm, x);
+					vm->frame->pc++;
+					break;
+				}
+				case VM_COPY: {
+					Object *x = top(vm->operands);
+					push(vm, x);
+					vm->frame->pc++;
+					break;
+				}
 				case VM_DEFINE: {
 					Object *y = top(vm->operands);
 					pop(vm);
@@ -253,20 +265,24 @@ int VirtualMachine_EvalFrame(VirtualMachineObject *vm) {
 					vm->frame->pc++;
 					if (VirtualMachine_Call(vm, args, AS_PROCEDURE(func)) < 0)
 						goto error;
+#ifdef __DEBUG__
+						if (CAST(ProcedureObject*, func)->c_function) {
+							printf("call ");
+							PRINT(func, stdout);
+							printf(", arg=");
+							PRINT(args, stdout);
+							printf(", return value: ");
+							PRINT(CAR(vm->operands), stdout);
+							printf("\n");
+						} else {
+							printf("call\n");
+							printf("----------frames---------\n");
+							PRINT(vm->frame, stdout);
+							printf("----------end frames-----\n");
+						}
+#endif
 					DECREF(args);
 					DECREF(func);
-#ifdef __DEBUG__
-					if (CAST(ProcedureObject*, func)->c_function) {
-						printf("call ");
-						PRINT(func, stdout);
-						printf("\n");
-					} else {
-						printf("call\n");
-						printf("----------frames---------\n");
-						PRINT(vm->frame, stdout);
-						printf("----------end frames-----\n");
-					}
-#endif
 					break;
 				}
 				case VM_TAIL_CALL: {
@@ -355,87 +371,6 @@ int VirtualMachine_EvalFrame(VirtualMachineObject *vm) {
 	while (IS_NOT_NULL(vm->operands)) pop(vm);
 	return -1;
 }
-//Object *translate(Object *o) {
-//	if (IS_LIST(o)) {
-//		if (CAR(o) == global_symbols.quote) {
-//			assert(IS_NOT_NULL(CDR(o)));
-//		} else if (CAR(o) == global_symbols.if_expr) {
-//			Object *test = NULL;
-//			Object *e1 = NULL, *e2 = NULL;
-//			if (ParseArgs(o, "(if ? ? ?)", &test, &e1, &e2) == 3) {
-//			} else if (ParseArgs(o, "(if ? ?)", &test, &e1) == 2) {
-//			} else {
-//				assert(0);
-//			}
-//
-//		} else if (CAR(o) == global_symbols.lambda) {
-//			Object *params = NULL;
-//			Object *body = NULL;
-//			assert(ParseArgs(o, "(lambda ? . ?)", &params, &body) == 2);
-//			assert(IS_TYPE(params, Symbol_Type) || IS_LIST(params) || IS_TYPE(params, Pair_Type));
-//			Object *translated_body = translate(body);
-//			if (translated_body == body) {
-//				DECREF(translated_body);
-//				INCREF(o);
-//				return o;
-//			} else {
-//				Object *tmp = CONS(params, translated_body);
-//				Object *res = CONS(global_symbols.lambda, tmp);
-//				DECREF(tmp);
-//				return res;
-//			}
-//		} else if (CAR(o) == global_symbols.set) {
-//			Object *var = NULL, *e = NULL;
-//			assert(ParseArgs(o, "(set! ? ?)", &var, &e) == 2);
-//			assert(IS_TYPE(var, Symbol_Type));
-//			Object *translated_expr = translate(e);
-//			if (translated_expr == e) {
-//				DECREF(translated_expr);
-//				INCREF(o);
-//				return o;
-//			} else {
-//				Object *tmp = CONS(var, translated_expr);
-//				Object *res = CONS(global_symbols.set, tmp);
-//				DECREF(tmp);
-//				return res;
-//			}
-//		} else if (CAR(o) == global_symbols.define) {
-//			Object *var = NULL, *formals = NULL, *e = NULL;
-//			if (ParseArgs(o, "(define (? . ?) ?)", &var, &formals, &e) == 3) {
-//				assert(IS_TYPE(var, Symbol_Type));
-//				assert(IS_LIST(formals) || IS_TYPE(formals, Pair_Type) || IS_TYPE(formals, Symbol_Type));
-//				Object *translated_expr = translate(e);
-//				Object *res = CONS(formals, translated_expr);
-//				Object *tmp = NULL;
-//				MOVE_SET(tmp, res, CONS(global_symbols.lambda, res));
-//				MOVE_SET(tmp, res, CONS(var, res));
-//				MOVE_SET(tmp, res, CONS(global_symbols.define, res));
-//				DECREF(translated_expr);
-//				return res;
-//			} else if (ParseArgs(o, "(define ? ?)", &var, &e) == 2) {
-//				assert(IS_TYPE(var, Symbol_Type));
-//				Object *translated_expr = translate(e);
-//				if (translated_expr == e) {
-//					DECREF(translated_expr);
-//					INCREF(o);
-//					return o;
-//				} else {
-//					Object *tmp = CONS(var, translated_expr);
-//					Object *res = CONS(global_symbols.define, tmp);
-//					DECREF(tmp);
-//					return res;
-//				}
-//			} else {
-//				assert(0);
-//			}
-//		} else {
-//			assert(0);
-//		}
-//	} else {
-//		INCREF(o);
-//		return o;
-//	}
-//}
 
 #define NEW_INSTRUCTION(code, ...) Code_Append(code, (VMInstruction) {__VA_ARGS__})
 
@@ -604,6 +539,88 @@ static void dfs_let(Object *o, CodeObject *code, int tail_flag, int define_flag,
 
 }
 
+static void dfs_cond(Object *o, CodeObject *code, int tail_flag, int define_flag, ChainMap *scope) {
+	assert(EQV(global_symbols.cond, CAR(o)));
+	Object *clauses = NULL;
+	int has_else = 0;
+	ArrayObject *jump_if_false_indices = Array_New(0, sizeof(size_t));
+	ArrayObject *jump_forward_indices = Array_New(0, sizeof(size_t));
+	ArrayObject *test_begin_indices = Array_New(0, sizeof(size_t));
+//	NEW_INSTRUCTION(code, VM_LOAD, AS_OBJECT(String_FromCStr("cond")));
+//	NEW_INSTRUCTION(code, VM_POP);
+	for (clauses = CDR(o); IS_NOT_NULL(clauses); clauses = CDR(clauses)) {
+		Object *expressions = CAR(clauses);
+		assert(IS_LIST(expressions));
+		size_t len = Pair_ListLength(expressions);
+		assert(len >= 1);
+		if (EQV(global_symbols.cond_else, CAR(expressions))) {
+			assert(IS_NULL(CDR(clauses)));
+			assert(len > 1);
+			has_else = 1;
+			Array_Append(test_begin_indices, (size_t[]) {SIZE(code)});
+			for (expressions = CDR(expressions); IS_NOT_NULL(CDR(expressions)); expressions = CDR(expressions)) {
+				dfs(CAR(expressions), code, 0, 0, scope);
+				NEW_INSTRUCTION(code, VM_POP);
+			}
+			assert(IS_NULL(CDR(expressions)));
+			dfs(CAR(expressions), code, tail_flag, 0, scope);
+
+		} else {
+			Object *test = CAR(expressions);
+			expressions = CDR(expressions);
+
+			Array_Append(test_begin_indices, (size_t[]) {SIZE(code)});
+			dfs(test, code, 0, 0, scope);
+			if (len == 1) {
+				NEW_INSTRUCTION(code, VM_COPY);
+			}
+			Array_Append(jump_if_false_indices, (size_t[]) {SIZE(code)});
+			NEW_INSTRUCTION(code, VM_JUMP_IF_FALSE);
+			if (len == 3 && EQV(global_symbols.cond_arrow, CAR(expressions))) {
+
+				dfs(CAR(CDR(expressions)), code, 0, 0, scope);
+				NEW_INSTRUCTION(code, VM_SWAP);
+				NEW_INSTRUCTION(code, VM_LOAD, NewRef(EMPTY_LIST));
+				NEW_INSTRUCTION(code, VM_CONS);
+				NEW_INSTRUCTION(code, tail_flag ? VM_TAIL_CALL : VM_CALL);
+
+			} else if (len >= 2) {
+
+				for (; IS_NOT_NULL(CDR(expressions)); expressions = CDR(expressions)) {
+					dfs(CAR(expressions), code, 0, 0, scope);
+					NEW_INSTRUCTION(code, VM_POP);
+				}
+				assert(IS_NULL(CDR(expressions)));
+				dfs(CAR(expressions), code, tail_flag, 0, scope);
+			}
+			Array_Append(jump_forward_indices, (size_t[]) {SIZE(code)});
+			NEW_INSTRUCTION(code, VM_JUMP_FORWARD);
+		}
+	}
+
+	if (!has_else) {
+		Array_Append(test_begin_indices, (size_t[]) {SIZE(code)});
+		NEW_INSTRUCTION(code, VM_LOAD, NewRef(OBJ_NONE));
+	}
+	assert(SIZE(jump_if_false_indices) + 1 == SIZE(test_begin_indices));
+	for (size_t i = 0; i < SIZE(jump_if_false_indices); ++i) {
+		size_t src = Array_At(size_t, jump_if_false_indices, i);
+		size_t dest = Array_At(size_t, test_begin_indices, i + 1);
+		assert(src < dest);
+		Code_SetOpArg(code, src, dest - src);
+	}
+	for (size_t i = 0, dest = SIZE(code); i < SIZE(jump_forward_indices); ++i) {
+		size_t src = Array_At(size_t, jump_forward_indices, i);
+		assert(src < dest);
+		Code_SetOpArg(code, src, SIZE(code) - src);
+	}
+	DECREF(test_begin_indices);
+	DECREF(jump_if_false_indices);
+	DECREF(jump_forward_indices);
+//	NEW_INSTRUCTION(code, VM_LOAD, AS_OBJECT(String_FromCStr("cond end")));
+//	NEW_INSTRUCTION(code, VM_POP);
+}
+
 void dfs(Object *o, CodeObject *code, int tail_flag, int define_flag, ChainMap *scope) {
 
 	if (IS_LIST(o) && IS_NOT_NULL(o)) {
@@ -639,6 +656,9 @@ void dfs(Object *o, CodeObject *code, int tail_flag, int define_flag, ChainMap *
 			return;
 		} else if (EQV(global_symbols.let, CAR(o))) {
 			dfs_let(o, code, tail_flag, define_flag, scope);
+			return;
+		} else if (EQV(global_symbols.cond, CAR(o))) {
+			dfs_cond(o, code, tail_flag, define_flag, scope);
 			return;
 		} else { // call
 			size_t nargs = 0;

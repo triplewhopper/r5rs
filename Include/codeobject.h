@@ -7,6 +7,8 @@
 enum VMOpCode {
 	VM_NOP,
 	VM_POP,
+	VM_SWAP,
+	VM_COPY,
 	VM_DEFINE,
 	VM_LOOKUP,
 	VM_LOAD, // obj
@@ -34,7 +36,6 @@ struct code_object {
 	Object *co_name;
 	ArrayObject *co_instructions;
 };
-extern TypeObject Code_Type;
 
 CodeObject *Code_New(Object *co_name);
 

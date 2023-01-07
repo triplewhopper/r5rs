@@ -56,6 +56,8 @@ void Code_Print(CodeObject *self, FILE *f) {
 		switch (instr->opcode) {
 			MAKE_CASE(VM_NOP);
 			MAKE_CASE(VM_POP);
+			MAKE_CASE(VM_SWAP);
+			MAKE_CASE(VM_COPY);
 			MAKE_CASE(VM_DEFINE);
 			MAKE_CASE(VM_LOOKUP);
 			case VM_LOAD: {

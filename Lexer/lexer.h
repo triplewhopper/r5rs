@@ -17,9 +17,13 @@ LexerObject *Lexer_FromFile(const char *);
 
 LexerObject *Lexer_FromCStr(const char *);
 
+void Lexer_Extend(LexerObject *lexer, const char *s);
+
 void Lexer_Dealloc(LexerObject *lexer);
 
 int Lexer_GetNextToken(LexerObject *, TokenObject **);
+
+TokenObject *Lexer_PeekForwardTokenBy(LexerObject *lexer, size_t n_lookahead);
 
 TokenObject *Lexer_PeekNextToken(LexerObject *);
 

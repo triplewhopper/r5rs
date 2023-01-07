@@ -4,14 +4,14 @@
 #include <string.h>
 #include "typedefs.h"
 
-#define FLAG_TRACK_ALL_OBJS
+//#define FLAG_TRACK_ALL_OBJS
 struct object {
 	int ob_refcnt;
 	TypeObject *ob_type;
 	int finalized;
+	int searched;
 #ifdef FLAG_TRACK_ALL_OBJS
 	int obj_index;
-	int searched;
 #endif
 };
 

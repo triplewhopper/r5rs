@@ -16,9 +16,9 @@ VirtualMachineObject *VirtualMachine_New(ChainMap *);
 
 void VirtualMachine_Dealloc(VirtualMachineObject *);
 void VirtualMachine_Search(VirtualMachineObject *vm, Object *target, ArrayObject *res);
-void VirtualMachine_Push(VirtualMachineObject *, Object *);
+//void VirtualMachine_Push(VirtualMachineObject *, Object *);
 
-void VirtualMachine_Pop(VirtualMachineObject *);
+//void VirtualMachine_Pop(VirtualMachineObject *);
 
 int VirtualMachine_Exec(VirtualMachineObject *vm, CodeObject *code);
 

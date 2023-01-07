@@ -10,12 +10,12 @@
 			    (set! x 0)
 			    (begin (set! x (+ x 1)) (f arg))))))
 
-(define (abs x) (if (> x 0) x (- x)))
-(define (sqrt-next xn a) (* 0.5 (+ xn (/ a xn))))
-(define (sqrt-judge xn xn+1 a) (if (< (abs (- xn xn+1)) 1e-6) xn (sqrt-impl xn+1 a)))
-(define (sqrt-impl xn a) (sqrt-judge xn (sqrt-next xn a) a))
-(define (sqrt a) (if (>= 0 a) a (sqrt-impl (/ a 2) a)))
 
 (define s (make-monitored sqrt))
-(list (s 100) (s 400) (s 'how-many-calls?) (s 'reset-count) (s 900) (s 'how-many-calls?))
+(s 100)
+(s 400)
+(s 'how-many-calls?)
+(s 'reset-count)
+(s 900)
+(s 'how-many-calls?)
 

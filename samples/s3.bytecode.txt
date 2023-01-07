@@ -1,0 +1,51 @@
+code object (id=1): 
+  0 VM_LOAD symbol object `my-gcd`
+  1 VM_LOAD pair object (`x` `y`)
+  2 VM_LOAD code object `my-gcd` (#2)
+  3 VM_MAKE_FUNCTION
+  4 VM_DEFINE
+  5 VM_LOAD None object #<unspecified>
+
+code object `my-gcd` (id=2): 
+  0 VM_LOAD symbol object `=`
+  1 VM_LOOKUP
+  2 VM_LOAD long object 0
+  3 VM_LOAD symbol object `y`
+  4 VM_LOOKUP
+  5 VM_LOAD empty_list object ()
+  6 VM_CONS
+  7 VM_CONS
+  8 VM_CALL
+  9 VM_JUMP_IF_FALSE 4
+ 10 VM_LOAD symbol object `x`
+ 11 VM_LOOKUP
+ 12 VM_JUMP_FORWARD 19
+ 13 VM_LOAD symbol object `my-gcd`
+ 14 VM_LOOKUP
+ 15 VM_LOAD symbol object `y`
+ 16 VM_LOOKUP
+ 17 VM_LOAD symbol object `remainder`
+ 18 VM_LOOKUP
+ 19 VM_LOAD symbol object `x`
+ 20 VM_LOOKUP
+ 21 VM_LOAD symbol object `y`
+ 22 VM_LOOKUP
+ 23 VM_LOAD empty_list object ()
+ 24 VM_CONS
+ 25 VM_CONS
+ 26 VM_CALL
+ 27 VM_LOAD empty_list object ()
+ 28 VM_CONS
+ 29 VM_CONS
+ 30 VM_TAIL_CALL
+
+code object (id=3): 
+  0 VM_LOAD symbol object `my-gcd`
+  1 VM_LOOKUP
+  2 VM_LOAD long object 9801
+  3 VM_LOAD long object 1287
+  4 VM_LOAD empty_list object ()
+  5 VM_CONS
+  6 VM_CONS
+  7 VM_CALL
+

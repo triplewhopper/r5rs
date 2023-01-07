@@ -1,0 +1,101 @@
+code object (id=1): 
+  0 VM_LOAD symbol object `fib-impl`
+  1 VM_LOAD pair object (`n` `a` `b`)
+  2 VM_LOAD code object `fib-impl` (#2)
+  3 VM_MAKE_FUNCTION
+  4 VM_DEFINE
+  5 VM_LOAD None object #<unspecified>
+
+code object `fib-impl` (id=2): 
+  0 VM_LOAD String object cond
+  1 VM_POP
+  2 VM_LOAD symbol object `=`
+  3 VM_LOOKUP
+  4 VM_LOAD long object 1
+  5 VM_LOAD symbol object `n`
+  6 VM_LOOKUP
+  7 VM_LOAD empty_list object ()
+  8 VM_CONS
+  9 VM_CONS
+ 10 VM_CALL
+ 11 VM_JUMP_IF_FALSE 4
+ 12 VM_LOAD symbol object `b`
+ 13 VM_LOOKUP
+ 14 VM_JUMP_FORWARD 29
+ 15 VM_LOAD symbol object `fib-impl`
+ 16 VM_LOOKUP
+ 17 VM_LOAD symbol object `-`
+ 18 VM_LOOKUP
+ 19 VM_LOAD symbol object `n`
+ 20 VM_LOOKUP
+ 21 VM_LOAD long object 1
+ 22 VM_LOAD empty_list object ()
+ 23 VM_CONS
+ 24 VM_CONS
+ 25 VM_CALL
+ 26 VM_LOAD symbol object `b`
+ 27 VM_LOOKUP
+ 28 VM_LOAD symbol object `+`
+ 29 VM_LOOKUP
+ 30 VM_LOAD symbol object `a`
+ 31 VM_LOOKUP
+ 32 VM_LOAD symbol object `b`
+ 33 VM_LOOKUP
+ 34 VM_LOAD empty_list object ()
+ 35 VM_CONS
+ 36 VM_CONS
+ 37 VM_CALL
+ 38 VM_LOAD empty_list object ()
+ 39 VM_CONS
+ 40 VM_CONS
+ 41 VM_CONS
+ 42 VM_TAIL_CALL
+ 43 VM_LOAD String object cond end
+ 44 VM_POP
+
+code object (id=3): 
+  0 VM_LOAD symbol object `fib`
+  1 VM_LOAD pair object (`n`)
+  2 VM_LOAD code object `fib` (#4)
+  3 VM_MAKE_FUNCTION
+  4 VM_DEFINE
+  5 VM_LOAD None object #<unspecified>
+
+code object `fib` (id=4): 
+  0 VM_LOAD String object cond
+  1 VM_POP
+  2 VM_LOAD symbol object `<=`
+  3 VM_LOOKUP
+  4 VM_LOAD symbol object `n`
+  5 VM_LOOKUP
+  6 VM_LOAD long object 1
+  7 VM_LOAD empty_list object ()
+  8 VM_CONS
+  9 VM_CONS
+ 10 VM_CALL
+ 11 VM_JUMP_IF_FALSE 4
+ 12 VM_LOAD symbol object `n`
+ 13 VM_LOOKUP
+ 14 VM_JUMP_FORWARD 12
+ 15 VM_LOAD symbol object `fib-impl`
+ 16 VM_LOOKUP
+ 17 VM_LOAD symbol object `n`
+ 18 VM_LOOKUP
+ 19 VM_LOAD long object 0
+ 20 VM_LOAD long object 1
+ 21 VM_LOAD empty_list object ()
+ 22 VM_CONS
+ 23 VM_CONS
+ 24 VM_CONS
+ 25 VM_TAIL_CALL
+ 26 VM_LOAD String object cond end
+ 27 VM_POP
+
+code object (id=5): 
+  0 VM_LOAD symbol object `fib`
+  1 VM_LOOKUP
+  2 VM_LOAD long object 11
+  3 VM_LOAD empty_list object ()
+  4 VM_CONS
+  5 VM_CALL
+

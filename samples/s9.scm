@@ -1,0 +1,10 @@
+(define (caar lst) (car (car lst)))
+(define (cddr lst) (cdr (cdr lst)))
+(define (f1 lst) (caar (cddr lst)))
+(define (f2 lst) (caar lst))
+(define (cadadr lst) (car (cdr (car (cdr lst)))))
+(define (f3 lst) (cadadr (cadadr (cadadr lst))))
+
+(f1 '(1 2 (3 4) 5))
+(f2 '((3)))
+(f3 '(1 (2 (4 (5 (6 (7 3)))))))

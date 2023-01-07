@@ -12,148 +12,168 @@
 #include "Include/chainmapobject.h"
 #include "Include/codeobject.h"
 #include "Include/procedureobject.h"
+#include "Include/noneobject.h"
 #include "Include/frameobject.h"
 #include "Include/vmobject.h"
-#include "library/runtime.h"
+#include "library/builtins.h"
 
-void TypeObjectsInit() {
-	Type_SetBaseClass(&Boolean_Type, &BaseObject_Type);
-	Type_SetBaseClass(&Char_Type, &BaseObject_Type);
-	Type_SetBaseClass(&Complex_Type, &BaseObject_Type);
-	Type_SetBaseClass(&Float_Type, &BaseObject_Type);
-	Type_SetBaseClass(&Fraction_Type, &BaseObject_Type);
-	Type_SetBaseClass(&Long_Type, &BaseObject_Type);
-	Type_SetBaseClass(&None_Type, &BaseObject_Type);
-	Type_SetBaseClass(&Pair_Type, &BaseObject_Type);
-	Type_SetBaseClass(&String_Type, &BaseObject_Type);
-	Type_SetBaseClass(&Symbol_Type, &BaseObject_Type);
-	Type_SetBaseClass(&Vector_Type, &BaseObject_Type);
-	Type_SetBaseClass(&Token_Type, &BaseObject_Type);
-	Type_SetBaseClass(&Dict_Type, &BaseObject_Type);
-	Type_SetBaseClass(&ChainMap_Type, &BaseObject_Type);
-	Type_SetBaseClass(&Procedure_Type, &BaseObject_Type);
-	Type_SetBaseClass(&Array_Type, &BaseObject_Type);
 
-	Type_SetBaseClass(&Lexer_Type, &BaseObject_Type);
-	Type_SetBaseClass(&Code_Type, &BaseObject_Type);
-	Type_SetBaseClass(&Frame_Type, &BaseObject_Type);
-	Type_SetBaseClass(&VirtualMachine_Type, &BaseObject_Type);
-}
-
-const char *readline() {
+StringObject *readline() {
 	char *buf = NULL;
+	int c = 0;
 	size_t size = 0;
 	FILE *f = open_memstream(&buf, &size);
 	assert(f);
-	int c;
 	while ((c = getchar()) != '\n') fputc(c, f);
 	fclose(f);
-	return buf;
+	StringObject *res = String_FromCStrN(buf, size);
+	free(buf);
+	return res;
 }
 
-void bytecode_test() {
-	LexerObject *l = Lexer_FromFile("../testcode/s7.scm");
-	FILE *fout = fopen("../testcode/s7.bytecode.txt", "w");
-	ChainMap *builtins = LoadBuiltinFuncs();
-	ChainMap *globals = ChainMap_NewChild(builtins, NULL);
+Object *eval(Object *datum, ChainMap *globals) {
+	CodeObject *code = Code_New(NULL);
+	dfs(datum, code, 0, 1, NULL);
+	Code_Freeze(code);
 	VirtualMachineObject *vm = VirtualMachine_New(globals);
-	Object *d = ParseDatum(l);
+	if (VirtualMachine_Exec(vm, code) < 0) {
+		DECREF(vm);
+		DECREF(code);
+		return NULL;
+	} else {
+		DECREF(code);
+		assert(IS_NOT_NULL(vm->operands));
+		assert(Pair_ListLength(vm->operands) == 1);
+		Object *res = NewRef(CAR(vm->operands));
+		DECREF(vm);
+		return res;
+	}
+}
+
+void load_from_file(ChainMap *globals, const char *filename) {
+	LexerObject *l = Lexer_FromFile(filename);
+	StringObject *bc = String_Format("%s.bytecode.txt", filename);
+	FILE *fout = fopen(bc->ob_sval, "w");
+	DECREF(bc);
 	int count = 0;
+	Object *d = ParseDatum(l);
 	while (d) {
 #ifdef __DEBUG__
 		printf("evaluating ");
 		PRINT(d, stdout);
 		printf("\n");
 #endif
-		CodeObject *code = Code_New(NULL);
-		dfs(d, code, 0, 1, NULL);
-		PRINT(code, fout);
-		if (VirtualMachine_Exec(vm, code) < 0) {
-			DECREF(vm);
-			DECREF(code);
+		Object *obj = eval(d, globals);
+		if (obj == NULL) {
 			break;
 		} else {
-			DECREF(code);
-
-			assert(IS_NOT_NULL(vm->operands));
-			assert(Pair_ListLength(vm->operands) == 1);
-			printf("$%d=", ++count);
-			PRINT(CAR(vm->operands), stdout);
-			printf("\n");
-			VirtualMachine_Pop(vm);
-#ifdef __DEBUG__
-			printf("\n");
-#endif
+			if (IS_NOT_NONE(obj)) {
+				printf("$%d=", ++count);
+				PRINT(obj, stdout);
+				printf("\n");
+			}
 		}
 		DECREF(d);
+		DECREF(obj);
 		d = ParseDatum(l);
 	}
-//	Code_Freeze(code);
 	fclose(fout);
 	DECREF(l);
-	DECREF(vm);
-	DECREF(globals);
-	DECREF(builtins);
-
 }
 
-//void repl() {
-//	ChainMap *builtins = LoadBuiltinFuncs();
-//	ChainMap *globals = ChainMap_NewChild(builtins, NULL);
-//	VirtualMachineObject *vm = VirtualMachine_New(globals);
-//	while (1) {
-//		const char *buf = readline();
-//		LexerObject *l = Lexer_FromCStr(buf);
-//#ifdef __DEBUG__
-//		FILE *fout = fopen("../testcode/logicals.bytecode.txt", "w");
-//#endif
-////		INCREF(EMPTY_LIST);
-//		Object *d = ParseDatum(l);
-//		int count = 0;
-//		while (d) {
-//#ifdef __DEBUG__
-//			printf("evaluating ");
-//			PRINT(d, stdout);
-//			printf("\n");
-//#endif
-//			CodeObject *code = Code_New(NULL);
-//			dfs(d, code, 0, 1, NULL);
-//#ifdef __DEBUG__
-//			PRINT(code, fout);
-//#endif
-//			if (VirtualMachine_Exec(vm, code) < 0) {
-//				DECREF(vm);
-//				break;
-//			} else {
-//				assert(IS_NOT_NULL(vm->operands));
-//				assert(Pair_ListLength(vm->operands) == 1);
-//				printf("$%d=", ++count);
-//				char tmp[30];
-//				sprintf(tmp, "$%d", count);
-//				PRINT(CAR(vm->operands), stdout);
-//				printf("\n");
-//				SymbolObject *tmp_name = Symbol_FromCStr(tmp);
-//				ChainMap_SetItem(globals, tmp_name, CAR(vm->operands));
-//				DECREF(tmp_name);
-//				VirtualMachine_Pop(vm);
-//#ifdef __DEBUG__
-//
-//				printf("\n");
-//#endif
-//
-//			}
-//			DECREF(d);
-//			DECREF(code);
-//			d = ParseDatum(l);
-//		}
-////	Code_Freeze(code);
-//#ifdef __DEBUG__
-//		fclose(fout);
-//#endif
-//		free(buf);
-//		Lexer_Dealloc(l);
-//	}
-//}
+LexerObject *repl_read(StringObject *first_line) {
+	size_t k = 0;
+	TokenObject *token = NULL;
+	ArrayObject *paren_stack = Array_New(0, sizeof(char));
+	LexerObject *l = Lexer_FromCStr(first_line);
+	char *buf = NULL;
+	size_t size = 0;
+	FILE *f = open_memstream(&buf, &size);
+	assert(f);
+	fputs(first_line, f);
+	free(first_line);
+	while (1) {
+		while ((token = Lexer_PeekForwardTokenBy(l, k++)) != NULL) {
+			if (token->kind == L_PAREN) Array_Append(paren_stack, "(");
+			if (token->kind == R_PAREN) {
+				if (SIZE(paren_stack) > 0 && Array_Last(char, paren_stack) == '(') {
+					Array_Remove(paren_stack, SIZE(paren_stack) - 1);
+				} else {
+					fprintf(stderr, "unexpected ')'.");
+					DECREF(paren_stack);
+					DECREF(l);
+					fclose(f);
+					free(buf);
+					return NULL;
+				}
+			}
+		};
+		if (SIZE(paren_stack) > 0) {
+			DECREF(l);
+			printf(".. ");
+			fflush(stdout);
+			first_line = readline();
+			l = Lexer_FromCStr(first_line);
+			k = 0;
+			fputc('\n', f);
+			fputs(first_line, f);
+			free(first_line);
+		} else {
+			break;
+		}
+	}
+	DECREF(paren_stack);
+	DECREF(l);
+	fclose(f);
+	l = Lexer_FromCStr(buf);
+	free(buf);
+	return l;
+}
+
+void repl(ChainMap *globals) {
+	int count = 0;
+	while (1) {
+		printf("?> ");
+		const char *buf = readline();
+		if (!strcmp(buf, ",q")) {
+			free(buf);
+			gc_collect();
+			break;
+		} else if (!strcmp(buf, ",gc")) {
+			free(buf);
+			gc_collect();
+			continue;;
+		}
+
+		LexerObject *l = repl_read(buf);
+
+		for (Object *d = ParseDatum(l); d != NULL; DECREF(d), d = ParseDatum(l)) {
+#ifdef __DEBUG__
+			printf("evaluating ");
+			PRINT(d, stdout);
+			printf("\n");
+#endif
+			Object *obj = eval(d, globals);
+			if (obj == NULL) {
+				break;
+			} else {
+				if (IS_NOT_NONE(obj)) {
+					printf("$%d=", ++count);
+					PRINT(obj, stdout);
+					printf("\n");
+					SymbolObject *tmp_name = Symbol_Format("$%d", count);
+					ChainMap_SetItem(globals, tmp_name, obj);
+					DECREF(tmp_name);
+				}
+				DECREF(obj);
+			}
+		}
+#ifdef __DEBUG__
+		fclose(fout);
+#endif
+		DECREF(l);
+	}
+}
 
 const char *to_string(Object *obj) {
 	static char *buf = NULL;
@@ -174,17 +194,17 @@ const char *to_string(Object *obj) {
 }
 
 int main() {
-	TypeObjectsInit();
+	Type_InitTypeObjects();
 	gc_initialize();
 	Long_SmallIntsInitialize();
 	GlobalSymbolsInit();
-	bytecode_test();
+	ChainMap *builtins = load_builtins();
+	ChainMap *globals = ChainMap_NewChild(builtins, NULL);
+	repl(globals);
+	DECREF(globals);
+	DECREF(builtins);
+	gc_collect();
 	GlobalSymbolsFinalize();
-	extern Object *live_objects[100000];
-//	get_parents(live_objects[28]);
-	gc_collect();
-	gc_collect();
 	gc_finalize();
-//	repl();
 	return 0;
 }

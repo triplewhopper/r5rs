@@ -1,0 +1,5 @@
+(define (my-assoc key alist)
+	(cond ((null? alist) #f)
+		  ((equal? key (caar alist))
+		   (car alist))
+		  (else (my-assoc key (cdr alist)))))

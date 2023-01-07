@@ -1,6 +1,6 @@
 #include <stdarg.h>
 #include <inttypes.h>
-#include "runtime.h"
+#include "builtins.h"
 #include "../Include/object.h"
 #include "../Include/chainmapobject.h"
 #include "../Include/typeobject.h"
@@ -53,10 +53,11 @@ static struct builtin_funcs_kvpair_t {
 		{">",           num_gt},
 		{"display",     display},
 		{"newline",     newline},
+		{"load", load},
 		{NULL, NULL}
 };
 
-ChainMap *LoadBuiltinFuncs() {
+ChainMap *load_builtins() {
 	ChainMap *res = ChainMap_NewEmpty();
 	for (typeof(&builtin_funcs[0]) t = builtin_funcs; t->func_name != NULL; t++) {
 		SymbolObject *key = Symbol_FromCStr(t->func_name);
@@ -434,7 +435,10 @@ Object *newline(size_t argc, Object *argv[]) {
 	printf("\n");
 	RETURN_NONE;
 }
+Object *load(size_t argc, Object *argv[]){
+	CHECK_ARGC(1, "(load file-name)")
 
+}
 int perror_format(const char *format, ...) {
 	va_list ap;
 	va_start(ap, format);
