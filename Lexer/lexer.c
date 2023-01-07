@@ -1,6 +1,6 @@
 #include "lexer.h"
 #include "../library/string2number.h"
-#include "../Include/arrayobject.h"
+#include "../Includes/arrayobject.h"
 
 #define LA(k) (current.lookahead[k])
 
