@@ -4,29 +4,30 @@ project(r5rs C)
 set(CMAKE_C_STANDARD 99)
 set(CMAKE_CXX_FLAGS -Wall)
 
+include_directories(Objects/)
 add_executable(r5rs
-        Objects/object.c
-        Objects/typeobject.c
-        Objects/floatobject.c
-        Objects/complexobject.c
-        Objects/longobject.c
-        Objects/fractionobject.c
-        Objects/numberobject.c
-        Objects/booleanobject.c
-        Objects/pairobject.c
-        Objects/charobject.c
-        Objects/stringobject.c
-        Objects/fractionobject.c
-        Objects/vectorobject.c
-        Objects/symbolobject.c
-        Objects/noneobject.c
-        Objects/arrayobject.c
-        Objects/dictobject.c
-        Objects/chainmap.c
-        Objects/procedureobject.c
-        Objects/frameobject.c
-        Objects/vmobject.c
-        Objects/codeobject.c
+#        Objects/object.c
+#        Objects/typeobject.c
+#        Objects/floatobject.c
+#        Objects/complexobject.c
+#        Objects/longobject.c
+#        Objects/fractionobject.c
+#        Objects/numberobject.c
+#        Objects/booleanobject.c
+#        Objects/pairobject.c
+#        Objects/charobject.c
+#        Objects/stringobject.c
+#        Objects/fractionobject.c
+#        Objects/vectorobject.c
+#        Objects/symbolobject.c
+#        Objects/noneobject.c
+#        Objects/arrayobject.c
+#        Objects/dictobject.c
+#        Objects/chainmap.c
+#        Objects/procedureobject.c
+#        Objects/frameobject.c
+#        Objects/vmobject.c
+#        Objects/codeobject.c
         library/builtins.c
         library/string2number.c
         Lexer/token.c
