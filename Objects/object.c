@@ -144,7 +144,7 @@ void XDecRef(Object *op) {
 	if (op) DecRef(op);
 }
 
-void gc_initialize() {
+void gc_init() {
 	assert(gc_objs == NULL && gc_unreachable == NULL || gc_objs != NULL && gc_unreachable != NULL);
 	if (gc_objs == NULL) {
 		gc_objs = Array_New(0, sizeof(Object *));

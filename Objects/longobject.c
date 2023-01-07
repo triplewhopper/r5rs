@@ -61,7 +61,7 @@ static LongObject *get_small_ints(i64 val) {
 }
 #endif
 
-void Long_SmallIntsInitialize() {
+void smallints_init() {
 #ifdef SMALL_INT_OPTIMIZATION
 	static int small_ints_init_flag = 0;
 	if (!small_ints_init_flag) {

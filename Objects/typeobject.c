@@ -17,7 +17,7 @@ static void Type_SetBaseClass(TypeObject *t, TypeObject *base) {
 #undef fill_method
 }
 
-void Type_InitTypeObjects() {
+void type_init() {
 	Type_SetBaseClass(&Boolean_Type, &BaseObject_Type);
 	Type_SetBaseClass(&Long_Type, &BaseObject_Type);
 	Type_SetBaseClass(&Float_Type, &BaseObject_Type);

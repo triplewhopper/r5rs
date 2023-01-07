@@ -9,7 +9,7 @@ struct long_object {
 };
 extern TypeObject Long_Type;
 
-void Long_SmallIntsInitialize();
+void smallints_init();
 
 LongObject *Long_From_i64(i64);
 

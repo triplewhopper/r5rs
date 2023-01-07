@@ -74,7 +74,7 @@ struct type_object {
 
 
 
-void Type_InitTypeObjects();
+void type_init();
 
 extern TypeObject BaseObject_Type;
 

@@ -75,7 +75,7 @@ void Symbol_Search(SymbolObject *self, Object *target, ArrayObject *res) {
 	SEARCH(self->name, target, res);
 }
 
-void GlobalSymbolsInit() {
+void global_symbols_init() {
 	global_symbols.cond_case = AS_OBJECT(Symbol_FromCStr("case"));
 	global_symbols.cond = AS_OBJECT(Symbol_FromCStr("cond"));
 	global_symbols.define = AS_OBJECT(Symbol_FromCStr("define"));
@@ -88,7 +88,7 @@ void GlobalSymbolsInit() {
 	global_symbols.quote = AS_OBJECT(Symbol_FromCStr("quote"));
 }
 
-void GlobalSymbolsFinalize() {
+void global_symbols_finalize() {
 	DECREF(global_symbols.cond_case);
 	DECREF(global_symbols.cond);
 	DECREF(global_symbols.define);

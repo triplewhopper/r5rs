@@ -4,7 +4,7 @@ project(r5rs C)
 set(CMAKE_C_STANDARD 99)
 set(CMAKE_CXX_FLAGS -Wall)
 
-include_directories(Include)
+include_directories(Includes)
 
 aux_source_directory(Objects src_list)
 aux_source_directory(Lexer src_list)

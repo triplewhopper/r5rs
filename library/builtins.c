@@ -26,6 +26,7 @@ static struct builtin_funcs_kvpair_t {
 //		{"real?",       IsReal},
 //		{"rational?",   IsRational},
 //		{"integer?",    IsInteger},
+		{"exit", builtin_exit},
 		{"pair?",       is_pair},
 		{"null?",       is_null},
 		{"list?",       is_list},
@@ -53,7 +54,7 @@ static struct builtin_funcs_kvpair_t {
 		{">",           num_gt},
 		{"display",     display},
 		{"newline",     newline},
-		{"load", load},
+		{"load",        load},
 		{NULL, NULL}
 };
 
@@ -65,7 +66,6 @@ ChainMap *load_builtins() {
 		ChainMap_SetItem(res, key, AS_OBJECT(value));
 		DECREF(key), DECREF(value);
 	}
-	return res;
 }
 
 //void AssertType(Object *obj, TypeObject *obj_type) {
@@ -435,10 +435,12 @@ Object *newline(size_t argc, Object *argv[]) {
 	printf("\n");
 	RETURN_NONE;
 }
-Object *load(size_t argc, Object *argv[]){
+
+Object *load(size_t argc, Object *argv[]) {
 	CHECK_ARGC(1, "(load file-name)")
 
 }
+
 int perror_format(const char *format, ...) {
 	va_list ap;
 	va_start(ap, format);

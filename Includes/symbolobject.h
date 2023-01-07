@@ -42,8 +42,8 @@ struct g_symbols {
 	Object *quote;
 } global_symbols;
 
-void GlobalSymbolsInit();
+void global_symbols_init();
 
-void GlobalSymbolsFinalize();
+void global_symbols_finalize();
 
 #endif

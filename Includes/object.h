@@ -50,7 +50,7 @@ Object *XNewRef(Object *obj);
 
 void get_parents(Object *obj);
 
-void gc_initialize();
+void gc_init();
 
 void gc_finalize();
 

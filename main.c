@@ -16,41 +16,14 @@
 #include "Include/frameobject.h"
 #include "Include/vmobject.h"
 #include "library/builtins.h"
+#include "library/io.h"
+
+static ChainMap *globals;
+static ChainMap *builtins;
 
 
-StringObject *readline() {
-	char *buf = NULL;
-	int c = 0;
-	size_t size = 0;
-	FILE *f = open_memstream(&buf, &size);
-	assert(f);
-	while ((c = getchar()) != '\n') fputc(c, f);
-	fclose(f);
-	StringObject *res = String_FromCStrN(buf, size);
-	free(buf);
-	return res;
-}
 
-Object *eval(Object *datum, ChainMap *globals) {
-	CodeObject *code = Code_New(NULL);
-	dfs(datum, code, 0, 1, NULL);
-	Code_Freeze(code);
-	VirtualMachineObject *vm = VirtualMachine_New(globals);
-	if (VirtualMachine_Exec(vm, code) < 0) {
-		DECREF(vm);
-		DECREF(code);
-		return NULL;
-	} else {
-		DECREF(code);
-		assert(IS_NOT_NULL(vm->operands));
-		assert(Pair_ListLength(vm->operands) == 1);
-		Object *res = NewRef(CAR(vm->operands));
-		DECREF(vm);
-		return res;
-	}
-}
-
-void load_from_file(ChainMap *globals, const char *filename) {
+void load_from_file(const char *filename) {
 	LexerObject *l = Lexer_FromFile(filename);
 	StringObject *bc = String_Format("%s.bytecode.txt", filename);
 	FILE *fout = fopen(bc->ob_sval, "w");
@@ -130,81 +103,25 @@ LexerObject *repl_read(StringObject *first_line) {
 	return l;
 }
 
-void repl(ChainMap *globals) {
-	int count = 0;
-	while (1) {
-		printf("?> ");
-		const char *buf = readline();
-		if (!strcmp(buf, ",q")) {
-			free(buf);
-			gc_collect();
-			break;
-		} else if (!strcmp(buf, ",gc")) {
-			free(buf);
-			gc_collect();
-			continue;;
-		}
 
-		LexerObject *l = repl_read(buf);
 
-		for (Object *d = ParseDatum(l); d != NULL; DECREF(d), d = ParseDatum(l)) {
-#ifdef __DEBUG__
-			printf("evaluating ");
-			PRINT(d, stdout);
-			printf("\n");
-#endif
-			Object *obj = eval(d, globals);
-			if (obj == NULL) {
-				break;
-			} else {
-				if (IS_NOT_NONE(obj)) {
-					printf("$%d=", ++count);
-					PRINT(obj, stdout);
-					printf("\n");
-					SymbolObject *tmp_name = Symbol_Format("$%d", count);
-					ChainMap_SetItem(globals, tmp_name, obj);
-					DECREF(tmp_name);
-				}
-				DECREF(obj);
-			}
-		}
-#ifdef __DEBUG__
-		fclose(fout);
-#endif
-		DECREF(l);
-	}
-}
-
-const char *to_string(Object *obj) {
-	static char *buf = NULL;
-	if (buf != NULL) {
-		free(buf);
-		buf = NULL;
-	}
-	size_t size = 0;
-	FILE *f = open_memstream(&buf, &size);
-	assert(f);
-	if (TYPE(obj)->tp_print) {
-		PRINT(obj, f);
-	} else {
-		fprintf(f, "type %s has no print method", TYPE(obj)->tp_name);
-	}
-	fclose(f);
-	return buf;
+ChainMap *load_globals() {
+	return ChainMap_NewChild(builtins, NULL);
 }
 
 int main() {
-	Type_InitTypeObjects();
-	gc_initialize();
-	Long_SmallIntsInitialize();
-	GlobalSymbolsInit();
-	ChainMap *builtins = load_builtins();
-	ChainMap *globals = ChainMap_NewChild(builtins, NULL);
+	type_init();
+	gc_init();
+	smallints_init();
+	global_symbols_init();
+	builtins = load_builtins();
+	globals = load_globals();
+
 	repl(globals);
 	DECREF(globals);
 	DECREF(builtins);
 	gc_collect();
-	GlobalSymbolsFinalize();
+	global_symbols_finalize();
 	gc_finalize();
 	return 0;
 }
