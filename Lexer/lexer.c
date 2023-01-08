@@ -198,7 +198,7 @@ static int get_next_token(FILE *lookahead, FILE *scanned, TokenObject **token, i
 		}
 		set_token_and_return(Token_New(lookahead, n, COMMENT), 0);
 	} else {
-		if (c == EOF) {
+		if (c == EOF || c == '\0') {
 			set_token_and_return(NULL, LEXER_ERR_NO_MORE_TOKENS);
 		}
 		size_t len = consume_until_delimiters(lookahead, scanned);
