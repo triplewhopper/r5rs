@@ -2,8 +2,8 @@
 #include <stdlib.h>
 #include <ctype.h>
 #include <stdarg.h>
-#include "../Include/typeobject.h"
-#include "../Include/stringobject.h"
+#include "typeobject.h"
+#include "stringobject.h"
 
 CompareMethods string_compare = {
 		.cmp_eqv = (int_binaryfunc) String_Eqv,

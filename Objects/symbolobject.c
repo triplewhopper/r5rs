@@ -1,8 +1,8 @@
-#include "../Include/typeobject.h"
-#include "../Include/stringobject.h"
-#include "../Include/symbolobject.h"
-#include "../Include/dictobject.h"
-#include "../Include/arrayobject.h"
+#include "typeobject.h"
+#include "stringobject.h"
+#include "symbolobject.h"
+#include "dictobject.h"
+#include "arrayobject.h"
 #include <assert.h>
 #include <stdarg.h>
 
@@ -75,28 +75,3 @@ void Symbol_Search(SymbolObject *self, Object *target, ArrayObject *res) {
 	SEARCH(self->name, target, res);
 }
 
-void global_symbols_init() {
-	global_symbols.cond_case = AS_OBJECT(Symbol_FromCStr("case"));
-	global_symbols.cond = AS_OBJECT(Symbol_FromCStr("cond"));
-	global_symbols.define = AS_OBJECT(Symbol_FromCStr("define"));
-	global_symbols.cond_else = AS_OBJECT(Symbol_FromCStr("else"));
-	global_symbols.cond_arrow = AS_OBJECT(Symbol_FromCStr("=>"));
-	global_symbols.if_expr = AS_OBJECT(Symbol_FromCStr("if"));
-	global_symbols.lambda = AS_OBJECT(Symbol_FromCStr("lambda"));
-	global_symbols.let = AS_OBJECT(Symbol_FromCStr("let"));
-	global_symbols.set = AS_OBJECT(Symbol_FromCStr("set!"));
-	global_symbols.quote = AS_OBJECT(Symbol_FromCStr("quote"));
-}
-
-void global_symbols_finalize() {
-	DECREF(global_symbols.cond_case);
-	DECREF(global_symbols.cond);
-	DECREF(global_symbols.define);
-	DECREF(global_symbols.cond_else);
-	DECREF(global_symbols.cond_arrow);
-	DECREF(global_symbols.if_expr);
-	DECREF(global_symbols.lambda);
-	DECREF(global_symbols.let);
-	DECREF(global_symbols.set);
-	DECREF(global_symbols.quote);
-}
