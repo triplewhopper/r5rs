@@ -123,5 +123,4 @@ $ ./r5rs ./library/arithmetics.scm ./samples/s20.scm
 2
 30.0000000000001
 1
-$ 
 ```
