@@ -7,3 +7,5 @@
 	(cond 
 		((<= n 1) n)
 		(else (fib-impl n 0 1))))
+
+(fib2 44)

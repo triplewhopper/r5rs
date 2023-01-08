@@ -1,27 +1,21 @@
 #ifndef R5RS_LEXER_H
 #define R5RS_LEXER_H
 
-#include <assert.h>
-#include <string.h>
-#include <stdio.h>
-#include <stdlib.h>
-#include <errno.h>
-#include <ctype.h>
-#include "token.h"
-#include "../Include/booleanobject.h"
-#include "../Include/typedefs.h"
+#include "typedefs.h"
 
 extern TypeObject Lexer_Type;
 
-LexerObject *Lexer_FromFile(const char *);
+//LexerObject *Lexer_FromFile(const char *);
 
-LexerObject *Lexer_FromCStr(const char *);
+//LexerObject *Lexer_FromCStr(const char *);
 
-void Lexer_Extend(LexerObject *lexer, const char *s);
+//LexerObject *Lexer_FromString(StringObject *s);
+//void Lexer_Extend(LexerObject *lexer, const char *s);
 
 void Lexer_Dealloc(LexerObject *lexer);
 
-int Lexer_GetNextToken(LexerObject *, TokenObject **);
+//int Lexer_GetNextToken(LexerObject *, TokenObject **);
+LexerObject *Lexer_FromStream(FILE *, const char *);
 
 TokenObject *Lexer_PeekForwardTokenBy(LexerObject *lexer, size_t n_lookahead);
 

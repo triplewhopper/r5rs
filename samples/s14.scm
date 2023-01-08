@@ -7,4 +7,8 @@
 	(cons (- (* (car c1) (car c2))
 			 (* (cdr c1) (cdr c2)))
 		  (+ (* (car c1) (cdr c2))
-		  	 (* (cdr c1) (car c2))))) 
+		  	 (* (cdr c1) (car c2)))))
+
+(complex 1 2)
+(complex* (complex 1/2 2/3)
+(complex 5 -3/2))

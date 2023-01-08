@@ -1,4 +1,3 @@
-0.0001
 (define (abs x) (if (< x 0) (- x) x))
 (define (sqrt-base x) (lambda (t) (- (* t t) x)))
 (define (deriv f dx) ; deriv :: (Num->Num)->Num->(Num->Num)

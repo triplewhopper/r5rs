@@ -10,8 +10,11 @@
 #include "../Include/numberobject.h"
 #include "../Include/vmobject.h"
 #include "../Include/codeobject.h"
-#include "../library/builtins.h"
-#include "../Parser/parser.h"
+#include "booleanobject.h"
+#include "builtins.h"
+#include "parser.h"
+#include "interpreter.h"
+
 
 TypeObject VirtualMachine_Type = {
 		.tp_name = "VirtualMachine",

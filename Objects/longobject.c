@@ -222,6 +222,8 @@ LongObject *Long_GCD(LongObject *x, LongObject *y) {
 		y = tmp;
 	}
 	DECREF(y);
+	if(Long_Sign(x)<0)
+		MOVE_SET(tmp, x, Long_Neg(x));
 	return x;
 }
 

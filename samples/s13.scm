@@ -5,3 +5,6 @@
 
 (define (my-reverse2 xs)
   (my-fold (lambda (h t) (cons h t)) '() xs))
+
+
+(my-reverse2 '(1 2 3 4 5))

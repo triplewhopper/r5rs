@@ -34,6 +34,8 @@ void Array_SetItem(ArrayObject *self, size_t index, void *item);
 
 void *Array_GetItem(ArrayObject *self, size_t index);
 
+void *Array_GetRawPtr(ArrayObject *self);
+
 ArrayObject *Array_Copy(ArrayObject *self);
 
 void Array_Swap(ArrayObject *self, ArrayObject *other);

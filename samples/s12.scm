@@ -1,5 +1,15 @@
+(define (caar x) (car (car x)))
+(define (equal? x y)
+    (cond ((eqv? x y) #t)
+          ((and (pair? x) (pair? y)) (and (equal? (car x) (car y)) (equal? (cdr x) (cdr y))))
+          (else #f)))
 (define (my-assoc key alist)
 	(cond ((null? alist) #f)
 		  ((equal? key (caar alist))
 		   (car alist))
 		  (else (my-assoc key (cdr alist)))))
+
+
+(define alist '((1 . "One") (2 . "Two") (3 . "Three")))
+(my-assoc 2 alist)
+(my-assoc 4 alist)

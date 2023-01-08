@@ -23,6 +23,8 @@ StringObject *String_FromCStr(const char *);
 
 StringObject *String_FromLiteral(StringObject *);
 
+StringObject *String_FromStream(FILE *stream, size_t length);
+
 StringObject *String_VFormat(const char *format, va_list ap);
 
 StringObject *String_Format(const char *, ...);

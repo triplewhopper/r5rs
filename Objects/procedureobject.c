@@ -8,7 +8,7 @@
 #include "../Include/numberobject.h"
 #include "../Include/noneobject.h"
 #include "../Include/codeobject.h"
-#include "../Parser/parser.h"
+#include "parser.h"
 
 TypeObject Procedure_Type = {
 		"procedure",

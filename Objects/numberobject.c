@@ -2,7 +2,7 @@
 #include "../Include/typeobject.h"
 #include "../Include/numberobject.h"
 #include "../Include/booleanobject.h"
-#include "../library/builtins.h"
+#include "builtins.h"
 #include <assert.h>
 #include <math.h>
 

@@ -24,6 +24,4 @@ int VirtualMachine_Exec(VirtualMachineObject *vm, CodeObject *code);
 
 int VirtualMachine_EvalFrame(VirtualMachineObject *);
 
-void dfs(Object *o, CodeObject *code, int tail_flag, int define_flag, ChainMap *scope);
-
 #endif //R5RS_VM_OBJECT_H

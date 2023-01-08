@@ -1,6 +1,6 @@
-# r5rs
+# Ski scheme
 
-An interpreter conforming with Scheme r5rs specification. 
+An interpreter conforming with a subset of r5rs specification. 
 
 This is one of the author's homeworks for [istube22 -- 情報科学基礎実験2022](https://sites.google.com/view/isutbe2022) at UTokyo.
 
@@ -14,7 +14,13 @@ This is one of the author's homeworks for [istube22 -- 情報科学基礎実験2
 
 ## Install
 
-`git`
+`git clone git@github.com:triplewhopper/r5rs.git`
+
+`cd r5rs`
+
+`mkdir cmake-build`
+
+
 
 ## Usage
 
@@ -38,6 +44,7 @@ This is one of the author's homeworks for [istube22 -- 情報科学基礎実験2
 - Proper tail recursion
 - Garbage collection (reference counting, cyclic reference detection)
 - Compiled to bytecode
+- Simple REPL
 - Fraction and complex number
 
 ### Not supported yet
@@ -47,6 +54,8 @@ This is one of the author's homeworks for [istube22 -- 情報科学基礎実験2
 - Executing bytecode directly   
 - Bytecode optimization
 - Exceptions handling
+- `quasiquote` 
+- `unquote` 
 - `call-with-current-continuation`
 
 ### Builtin functions

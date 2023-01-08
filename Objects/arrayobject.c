@@ -116,6 +116,10 @@ void *Array_GetItem(ArrayObject *self, size_t index) {
 	return item_at(self, index);
 }
 
+void *Array_GetRawPtr(ArrayObject *self) {
+	return self->items;
+}
+
 ArrayObject *Array_Copy(ArrayObject *self) {
 	ArrayObject *res = Array_New(SIZE(self), self->item_size);
 	memcpy(res->items, self->items, self->item_size * SIZE(self));

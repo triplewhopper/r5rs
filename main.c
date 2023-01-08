@@ -3,8 +3,8 @@
 #include <stdlib.h>
 #include <errno.h>
 #include <assert.h>
-#include "Lexer/lexer.h"
-#include "Parser/parser.h"
+#include "lexer.h"
+#include "parser.h"
 #include "Include/typeobject.h"
 #include "Include/pairobject.h"
 #include "Include/symbolobject.h"
@@ -15,19 +15,22 @@
 #include "Include/noneobject.h"
 #include "Include/frameobject.h"
 #include "Include/vmobject.h"
-#include "library/builtins.h"
-#include "library/io.h"
-
-static ChainMap *globals;
-static ChainMap *builtins;
-
+#include "builtins.h"
+#include "interpreter.h"
+#include "repl.h"
+#include "io.h"
 
 
-void load_from_file(const char *filename) {
-	LexerObject *l = Lexer_FromFile(filename);
-	StringObject *bc = String_Format("%s.bytecode.txt", filename);
-	FILE *fout = fopen(bc->ob_sval, "w");
-	DECREF(bc);
+void load_from_file(R5RS *r, const char *filename) {
+	FILE *f = fopen(filename, "r");
+	if(f==NULL){
+		perror(filename);
+		exit(EXIT_FAILURE);
+	}
+	LexerObject *l = Lexer_FromStream(f, filename);
+//	StringObject *bc = String_Format("%s.bytecode.txt", filename);
+//	FILE *fout = fopen(bc->ob_sval, "w");
+//	DECREF(bc);
 	int count = 0;
 	Object *d = ParseDatum(l);
 	while (d) {
@@ -36,12 +39,12 @@ void load_from_file(const char *filename) {
 		PRINT(d, stdout);
 		printf("\n");
 #endif
-		Object *obj = eval(d, globals);
+		Object *obj = repl_eval(d, r);
 		if (obj == NULL) {
 			break;
 		} else {
 			if (IS_NOT_NONE(obj)) {
-				printf("$%d=", ++count);
+//				printf("$%d=", ++count);
 				PRINT(obj, stdout);
 				printf("\n");
 			}
@@ -50,76 +53,25 @@ void load_from_file(const char *filename) {
 		DECREF(obj);
 		d = ParseDatum(l);
 	}
-	fclose(fout);
+//	fclose(fout);
 	DECREF(l);
 }
 
-LexerObject *repl_read(StringObject *first_line) {
-	size_t k = 0;
-	TokenObject *token = NULL;
-	ArrayObject *paren_stack = Array_New(0, sizeof(char));
-	LexerObject *l = Lexer_FromCStr(first_line);
-	char *buf = NULL;
-	size_t size = 0;
-	FILE *f = open_memstream(&buf, &size);
-	assert(f);
-	fputs(first_line, f);
-	free(first_line);
-	while (1) {
-		while ((token = Lexer_PeekForwardTokenBy(l, k++)) != NULL) {
-			if (token->kind == L_PAREN) Array_Append(paren_stack, "(");
-			if (token->kind == R_PAREN) {
-				if (SIZE(paren_stack) > 0 && Array_Last(char, paren_stack) == '(') {
-					Array_Remove(paren_stack, SIZE(paren_stack) - 1);
-				} else {
-					fprintf(stderr, "unexpected ')'.");
-					DECREF(paren_stack);
-					DECREF(l);
-					fclose(f);
-					free(buf);
-					return NULL;
-				}
-			}
-		};
-		if (SIZE(paren_stack) > 0) {
-			DECREF(l);
-			printf(".. ");
-			fflush(stdout);
-			first_line = readline();
-			l = Lexer_FromCStr(first_line);
-			k = 0;
-			fputc('\n', f);
-			fputs(first_line, f);
-			free(first_line);
-		} else {
-			break;
-		}
-	}
-	DECREF(paren_stack);
-	DECREF(l);
-	fclose(f);
-	l = Lexer_FromCStr(buf);
-	free(buf);
-	return l;
-}
 
-
-
-ChainMap *load_globals() {
-	return ChainMap_NewChild(builtins, NULL);
-}
-
-int main() {
+int main(int argc, char *argv[]) {
 	type_init();
 	gc_init();
 	smallints_init();
 	global_symbols_init();
-	builtins = load_builtins();
-	globals = load_globals();
-
-	repl(globals);
-	DECREF(globals);
-	DECREF(builtins);
+	R5RS *r = R5RS_New();
+	if (argc > 1) {
+		for(size_t i = 1; i<argc;++i){
+			load_from_file(r, argv[i]);
+		}
+	} else {
+		repl_loop(r);
+	}
+	R5RS_Dealloc(r);
 	gc_collect();
 	global_symbols_finalize();
 	gc_finalize();

@@ -1,12 +1,12 @@
-#include <stdarg.h>
 #include "parser.h"
-#include "../Lexer/lexer.h"
-#include "../Lexer/token.h"
+#include "lexer.h"
+#include "tokenobject.h"
 #include "../Include/symbolobject.h"
 #include "../Include/vectorobject.h"
 #include "../Include/pairobject.h"
 #include "../Include/typeobject.h"
-#include "../library/builtins.h"
+#include "interpreter.h"
+#include "builtins.h"
 
 static Object *syntax_error(TokenObject *t) {
 	fprintf(stderr, "syntax error: unexpected ");
@@ -185,48 +185,4 @@ Object *ParseVector(LexerObject *lexer) {
 	for (size_t i = 0; i < n_objs; ++i)
 		Vector_SetItem(v, i, objs[i]);
 	return AS_OBJECT(v);
-}
-
-
-// ParseArgs("(? ? ? . ?)", &x, &y, &z, &others)
-int ParseArgsImpl(Object *obj, Object *datum, va_list ap) {
-	if (IS_TYPE(datum, Symbol_Type)) {
-		if (Symbol_Eqv_CStr(AS_SYMBOL(datum), "?")) {
-			*va_arg(ap, Object**) = obj;
-			return 1;
-		} else if (!EQV(obj, datum)) {
-			return -1;
-		}
-		return 0;
-	}
-	if (IS_TYPE(datum, Pair_Type)) {
-		if (IS_TYPE(obj, Pair_Type)) {
-			int a = ParseArgsImpl(CAR(obj), CAR(datum), ap);
-			if (a == -1) return -1;
-			int b = ParseArgsImpl(CDR(obj), CDR(datum), ap);
-			if (b == -1) return -1;
-			return a + b;
-		} else {
-			return -1;
-		}
-	}
-	return 0;
-}
-
-int ParseArgs(Object *obj, const char *format, ...) {
-	va_list ap;
-	va_start(ap, format);
-	LexerObject *lexer = Lexer_FromCStr(format);
-	Object *datum = ParseDatum(lexer);
-#ifdef __DEBUG__
-	printf("in function %s, datum=", __FUNCTION__);
-	PRINT(datum, stdout);
-	putchar('\n');
-#endif
-	int res = ParseArgsImpl(obj, datum, ap);
-	assert(ParseDatum(lexer) == NULL);
-	DECREF(datum);
-	DECREF(lexer);
-	va_end(ap);
-	return res;
 }

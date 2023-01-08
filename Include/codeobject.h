@@ -41,6 +41,8 @@ CodeObject *Code_New(Object *co_name);
 
 void Code_Append(CodeObject *self, VMInstruction instr);
 
+#define NEW_INSTRUCTION(code, ...) Code_Append(code, (VMInstruction) {__VA_ARGS__})
+
 void Code_Freeze(CodeObject *self);
 
 void Code_Print(CodeObject *self, FILE *f);

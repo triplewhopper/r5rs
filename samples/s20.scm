@@ -13,6 +13,7 @@
 
 (define s (make-monitored sqrt))
 (s 100)
+(s 'how-many-calls?)
 (s 400)
 (s 'how-many-calls?)
 (s 'reset-count)

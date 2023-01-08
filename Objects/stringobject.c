@@ -100,6 +100,15 @@ StringObject *String_FromLiteral(StringObject *literal) {
 	return res;
 }
 
+StringObject *String_FromStream(FILE *stream, size_t length) {
+	char *buf = malloc(length * sizeof(char));
+	assert(buf);
+	for (size_t i = 0; i < length; ++i) buf[i] = (char)fgetc(stream);
+	StringObject *res = String_FromCStrN(buf, length);
+	free(buf);
+	return res;
+}
+
 StringObject *String_VFormat(const char *format, va_list ap) {
 	char *s = NULL;
 	if (vasprintf(&s, format, ap) == -1) {

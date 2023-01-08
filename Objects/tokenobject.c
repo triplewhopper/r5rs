@@ -1,10 +1,10 @@
 #include <ctype.h>
-#include "../Include/typeobject.h"
-#include "token.h"
-#include "../library/builtins.h"
-#include "../Include/charobject.h"
-#include "../Include/numberobject.h"
-#include "../Include/booleanobject.h"
+#include "typeobject.h"
+#include "tokenobject.h"
+#include "builtins.h"
+#include "charobject.h"
+#include "numberobject.h"
+#include "booleanobject.h"
 
 TypeObject Token_Type = {
 		"Token",
@@ -40,44 +40,16 @@ void TokenKind_Print(TokenKind kind, FILE *out) {
 #undef MAKE_CASE
 }
 
-PosPtr consume(PosPtr current, size_t n) {
-	while (n--) {
-		const char c = current.lookahead[0];
-		if (c) {
-			if (c != '\n') {
-				current.pos.column++;
-			} else {
-				current.pos.column = 1;
-				current.pos.line++;
-			}
-		} else {
-			break;
-		}
-		++current.lookahead;
-	}
-	return current;
-}
 
-PosPtr consume_until_delimiters(PosPtr current, size_t n) {
-	while (current.lookahead[n]) {
-		if (isspace(current.lookahead[n])) break;
-		if (current.lookahead[n] == '(') break;
-		if (current.lookahead[n] == ')') break;
-		if (current.lookahead[n] == '"') break;
-		if (current.lookahead[n] == ';') break;
-		n++;
-	}
-	assert(n > 0);
-	return consume(current, n - 1);
-}
-
-TokenObject *Token_New(PosPtr start, PosPtr end, TokenKind kind) {
-	assert(start.lookahead <= end.lookahead);
+TokenObject *Token_New(FILE *f, size_t length, TokenKind kind) {
+	assert(length > 0);
 	TokenObject *res = (TokenObject *) TypeGenericAlloc(&Token_Type, 0);
 	res->kind = kind;
-	res->start = start.pos;
-	res->end = end.pos;
-	res->s = String_FromCStrN(start.lookahead, end.lookahead - start.lookahead + 1);
+	res->start = (SourceLocation) {};
+	res->end = (SourceLocation) {};
+	int v = fseek(f, -(long) length, SEEK_CUR);
+	assert(v == 0);
+	res->s = String_FromStream(f, length);
 	res->ob_val = NULL;
 #ifdef FLAG_TRACK_ALL_OBJS
 	res->ob_val_obj_index = -1;
@@ -102,6 +74,14 @@ TokenObject *Token_New(PosPtr start, PosPtr end, TokenKind kind) {
 void Token_Dealloc(TokenObject *self) {
 	DECREF(self->s);
 	XDECREF(self->ob_val);
+}
+
+void Token_SetStartLoc(TokenObject *self, SourceLocation start_loc) {
+	self->start = start_loc;
+}
+
+void Token_SetEndLoc(TokenObject *self, SourceLocation end_loc) {
+	self->end = end_loc;
 }
 
 void Token_SetKind(TokenObject *self, TokenKind kind) {

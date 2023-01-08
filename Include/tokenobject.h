@@ -1,18 +1,19 @@
-#ifndef R5RS_TOKEN_H
-#define R5RS_TOKEN_H
+#ifndef R5RS_TOKENOBJECT_H
+#define R5RS_TOKENOBJECT_H
 
 #include <assert.h>
 #include <stdio.h>
 #include <stdlib.h>
-#include "../Include/stringobject.h"
+#include "stringobject.h"
 
 typedef struct {
 	size_t line, column;
 } SourceLocation;
 
-typedef struct pos_ptr{
+typedef struct pos_ptr {
 	SourceLocation pos;
-	const char *lookahead;
+//	const char *lookahead;
+	size_t index;
 } PosPtr;
 
 typedef enum {
@@ -27,11 +28,11 @@ void TokenKind_Print(TokenKind, FILE *);
 
 PosPtr consume(PosPtr, size_t);
 
-// let j = n initially, and increase j repeatedly until current.lookahead[j + 1] == '\0', space characters, '(', ')', '"', or ';'.
-// return consume(current, j).
-PosPtr consume_until_delimiters(PosPtr, size_t);
+// let j = n initially, and increase j repeatedly until last_loc.lookahead[j + 1] == '\0', space characters, '(', ')', '"', or ';'.
+// return consume(last_loc, j).
+//PosPtr consume_until_delimiters(PosPtr, size_t);
 
-struct token_object{
+struct token_object {
 	Object ob_base;
 	TokenKind kind;
 	SourceLocation start, end;
@@ -48,9 +49,14 @@ struct token_object{
 	// otherwise ob_val == NULL.
 };
 
-extern TypeObject Token_Type;
+TokenObject *Token_New(FILE *, size_t, TokenKind);
 
-TokenObject *Token_New(PosPtr, PosPtr, TokenKind);
+void Token_SetStartLoc(TokenObject *, SourceLocation);
+void Token_SetEndLoc(TokenObject *, SourceLocation);
+
+void Token_GetStartLoc(TokenObject *);
+
+void Token_GetEndLoc(TokenObject *);
 
 void Token_SetKind(TokenObject *, TokenKind);
 
@@ -61,4 +67,4 @@ void Token_Print(TokenObject *, FILE *);
 void Token_Dealloc(TokenObject *);
 
 
-#endif //R5RS_TOKEN_H
+#endif //R5RS_TOKENOBJECT_H

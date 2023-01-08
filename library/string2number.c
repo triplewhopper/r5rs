@@ -4,10 +4,9 @@
 #include <assert.h>
 #include <errno.h>
 #include <stdarg.h>
-#include "../Include/typeobject.h"
-#include "../Include/stringobject.h"
-#include "../Include/numberobject.h"
-#include "../Include/booleanobject.h"
+#include "typeobject.h"
+#include "stringobject.h"
+#include "numberobject.h"
 //#define VERBOSE_ERR_MSG
 #define RETURN_WHEN_NULL(x) do { if((x)==NULL) return NULL; }while(0)
 #define CLEAR_ERR_MSG(e) do { assert(e); free(*(e)); *(e) = NULL; } while (0)
@@ -1152,7 +1151,7 @@ prefix(StringObject *self, size_t i, enum Radix *radix, enum Exactness *exactnes
 Object *String_ToNumber(StringObject *self) {
 	enum Exactness ei = EXACTNESS_UNSPECIFIED;
 	enum Radix r = RADIX_DECIMAL;
-	if (String_GetSize(self)) {
+	if (SIZE(self)) {
 		char *err_msg = NULL;
 		size_t v = 0;
 		if (self->ob_sval[0] == '#') {
@@ -1161,12 +1160,12 @@ Object *String_ToNumber(StringObject *self) {
 				assert(err_msg);
 				fprintf(stderr, "%s\n", err_msg);
 				free(err_msg);
-				RETURN_FALSE;
+				return NULL;
 			}
 			ASSERT_NO_ERR(&err_msg);
 		}
 		size_t n = match_complex(self, v, r, &err_msg);
-		if (n + v == String_GetSize(self)) {
+		if (n + v == SIZE(self)) {
 			ASSERT_NO_ERR(&err_msg);
 			struct complex_node *node = build_from_complex(self, v, r);
 			assert(node);
@@ -1182,10 +1181,10 @@ Object *String_ToNumber(StringObject *self) {
 //			if (err_msg)
 //				fprintf(stderr, "%s\n", err_msg);
 			free(err_msg);
-			RETURN_FALSE;
+			return NULL;
 		}
 	}
-	RETURN_FALSE;
+	return NULL;
 }
 
 #undef SET_ERR_AND_RETURN_0

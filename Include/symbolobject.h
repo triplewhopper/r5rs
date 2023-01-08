@@ -28,22 +28,5 @@ void Symbol_Dealloc(SymbolObject *);
 
 void Symbol_Search(SymbolObject *self, Object *target, ArrayObject *res);
 
-struct g_symbols {
-	Object *cond;
-	Object *cond_case;
-	Object *define;
-	Object *cond_else;
-	Object *cond_arrow;
-	Object *if_expr;
-	Object *lambda;
-	Object *let;
-	Object *let_star;
-	Object *set;
-	Object *quote;
-} global_symbols;
-
-void global_symbols_init();
-
-void global_symbols_finalize();
 
 #endif

@@ -120,6 +120,7 @@ LongObject *Fraction_GetDenominator(FractionObject *self) {
 }
 
 FractionObject *Fraction_Add(FractionObject *a, FractionObject *b) {
+
 	LongObject *na = a->_numerator;
 	LongObject *da = a->_denominator;
 
