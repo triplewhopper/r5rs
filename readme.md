@@ -14,11 +14,9 @@ This is one of the author's homeworks for [istube22 -- 情報科学基礎実験2
 
 ## Install
 
-`git clone git@github.com:triplewhopper/r5rs.git`
-
 `cd r5rs`
-
 `mkdir cmake-build`
+`cmake `
 
 
 
