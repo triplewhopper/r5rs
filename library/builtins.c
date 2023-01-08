@@ -366,7 +366,10 @@ static Object *newline(size_t argc, Object *argv[]) {
 
 static Object *load(size_t argc, Object *argv[]) {
 	CHECK_ARGC(1, "(load file-name)")
+	EXPECT_TYPE("file-name", argv[0], String_Type, "(load file-name");
+	fprintf(stderr, "not implemented.\n");
 	assert(0);
+	return NewRef(OBJ_NONE);
 }
 
 
