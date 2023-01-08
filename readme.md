@@ -25,7 +25,7 @@ This is one of the author's homeworks for [istube22 -- 情報科学基礎実験2
 
 If there are file arguments, then execute them sequentially, and exit.
 
-If there are no argument, launch the REPL.
+If there is no argument, launch the REPL.
 
 ## DESCRIPTION
 
