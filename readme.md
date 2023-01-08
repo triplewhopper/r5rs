@@ -16,8 +16,6 @@ This is one of the author's homeworks for [istube22 -- 情報科学基礎実験2
 
 `cd r5rs`
 
-`mkdir cmake-build`
-
 `cmake .; make`
 
 
